@@ -38,6 +38,10 @@ jobs:
       - name: 執行資料抓取與分析
         run: python fetch_and_analyze.py
 
+      # 👇 就是加這兩行
+      - name: 執行紀念品資料整合 (第三階段)
+        run: python gift_fetcher.py
+
       - name: 自動提交更新資料
         run: |
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
@@ -46,7 +50,7 @@ jobs:
           if git diff --staged --quiet; then
             echo "資料無變更，跳過 Commit"
           else
-            git commit -m "📈 自動更新股票資料: $(date +'%Y-%m-%d %H:%M')"
+            git commit -m "📈 自動更新股票與紀念品資料: $(date +'%Y-%m-%d %H:%M')"
             git push
           fi
 
