@@ -1,0 +1,61 @@
+name: Daily Stock Data Update
+
+on:
+  schedule:
+    # 台灣時間 (UTC+8) 每週六 10:00，轉換為 UTC 為 02:00
+    - cron: '0 2 * * 6'
+  workflow_dispatch:
+
+# 設定寫入權限，以便將 json 檔推回 repo
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+jobs:
+  update-stock:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 檢出儲存庫代碼
+        uses: actions/checkout@v4
+
+      - name: 設定 Python 環境
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+          cache: 'pip' # 自動快取套件加速執行
+
+      - name: 安裝相依套件
+        run: |
+          python -m pip install --upgrade pip
+          pip install pandas yfinance requests openpyxl
+
+      - name: 執行資料抓取與分析
+        run: python fetch_and_analyze.py
+
+      - name: 自動提交更新資料
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add tw_all_stock_data.json rejected_stocks.json
+          # 檢查是否有變更，避免無意義的 commit 報錯
+          if git diff --staged --quiet; then
+            echo "資料無變更，跳過 Commit"
+          else
+            git commit -m "📈 自動更新股票資料: $(date +'%Y-%m-%d %H:%M')"
+            git push
+          fi
+
+      # 如果你的 GitHub Pages 是設定從特定分支（如 main）自動建置
+      # 則上述的 git push 就會自動觸發 Pages 更新。
+      # 若需手動觸發 Pages 部署（Deploy from Actions 模式），可加入以下步驟：
+      
+      - name: 部署至 GitHub Pages
+        uses: actions/upload-pages-artifact@v3
+        with:
+          # 假設你的網頁 index.html 和數據都在根目錄
+          path: '.'
+
+      - name: 發布部署
+        uses: actions/deploy-pages@v4
