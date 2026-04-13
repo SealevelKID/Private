@@ -1,0 +1,394 @@
+:root {
+    --primary-color: #4A90E2;
+    --bg-color: #F5F7FA;
+    --card-bg: #FFFFFF;
+    --text-main: #333333;
+    --text-muted: #888888;
+    --border-color: #E2E8F0;
+    --danger-color: #e53e3e;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background-color: var(--bg-color);
+    color: var(--text-main);
+    margin: 0;
+}
+.container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 0 15px;
+}
+
+header h1 {
+    text-align: center;
+    font-size: 1.8rem;
+    margin-bottom: 20px;
+}
+/* --- 頁首置頂與併排版面 --- */
+.sticky-header {
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    background-color: var(--bg-color); /* 確保背景不透明 */
+    padding-top: 10px;  /* 📉 大幅縮減頂部留白 */
+    padding-bottom: 10px; /* 📉 大幅縮減底部留白 */
+    border-bottom: 1px solid var(--border-color);
+}
+
+.header-main {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px; /* 📉 縮短與計算器的距離 */
+}
+
+.header-main h1 {
+    margin: 0;
+    font-size: 1.4rem; /* 稍微縮小標題 */
+}
+#updateDate {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+}
+
+/* 移除原本單獨的 top-actions margin */
+.top-actions {
+    margin-bottom: 0;
+}
+
+.calculator-bar {
+    background: var(--card-bg);
+    padding: 8px 12px; /* 📉 極致壓縮上下留白 */
+    border-radius: 8px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    flex-wrap: wrap; /* 螢幕縮小時自動安全換行 */
+    gap: 12px;
+}
+
+.calc-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 15px;
+    margin-bottom: 10px;
+}
+.calc-row:last-child { margin-bottom: 0; }
+
+.input-group input, .input-group select {
+    height: 40px; /* 🌟 強制統一高度 */
+    padding: 0 10px;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+    font-size: 0.95rem;
+    box-sizing: border-box;
+}
+
+.input-group label {
+    font-size: 0.9rem;
+    font-weight: bold;
+    color: #4a5568;
+    line-height: 40px; /* 讓標籤文字與輸入框垂直置中 */
+}
+/* 預估總額靠右對齊並統一高度 */
+.result-summary {
+    height: 40px; /* 🌟 強制統一高度 */
+    background: #fff5f5;
+    padding: 0 12px;
+    border-radius: 8px;
+    border: 1px solid #feb2b2;
+    display: inline-flex;
+    align-items: center; /* 讓內部文字完美垂直置中 */
+    gap: 6px;
+    margin-left: auto; 
+    box-sizing: border-box;
+}
+
+.result-summary .label {
+    font-size: 0.85rem;
+    color: #c53030;
+    font-weight: bold;
+}
+
+.result-summary .value {
+    font-size: 1.15rem;
+    font-weight: 800;
+    color: var(--danger-color);
+}
+
+/* 微調原本的 input 選擇器 */
+.calculator-card input {
+    font-size: 1.2rem;
+    padding: 10px;
+    width: 120px;
+    text-align: center;
+    border: 2px solid var(--border-color);
+    border-radius: 8px;
+    margin: 0 10px;
+}
+
+/* 雙頁籤設計 */
+.tabs {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.tab-btn {
+    flex: 1;
+    padding: 16px 20px; /* 大觸控範圍 */
+    font-size: 1.2rem;
+    font-weight: bold;
+    background-color: var(--card-bg);
+    border: 2px solid var(--border-color);
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    color: var(--text-muted);
+}
+
+.tab-btn.active {
+    background-color: var(--primary-color);
+    color: white;
+    border-color: var(--primary-color);
+    box-shadow: 0 4px 10px rgba(74, 144, 226, 0.3);
+}
+
+/* 表格設計 */
+.table-container {
+    background: var(--card-bg);
+    border-radius: 12px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+    overflow: hidden;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+}
+
+th, td {
+    padding: 20px 16px; /* 加寬列高，適合手指觸控 */
+    border-bottom: 1px solid var(--border-color);
+    font-size: 1.1rem;
+}
+
+th {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background-color: var(--hover-bg);
+    color: var(--text-muted);
+    font-weight: 600;
+}
+
+/* 股票名稱連結 */
+.stock-link {
+    color: var(--primary-color);
+    text-decoration: none;
+    font-weight: bold;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+/* --- 股利金額按鈕 --- */
+.dividend-btn {
+    background-color: #eef2f6;
+    color: #2c5282;
+    border: 1px solid #cbd5e1;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    /* 🌟 關鍵修正：強制文字不換行 */
+    white-space: nowrap !important;
+    display: inline-block;
+    min-width: max-content;
+}
+
+/* 確保表格的第二、三欄（金額部分）不會被自動壓縮 */
+#stockTable th:nth-child(2),
+#stockTable td:nth-child(2),
+#stockTable th:nth-child(3),
+#stockTable td:nth-child(3) {
+    white-space: nowrap;
+    width: 1%; /* 強制讓寬度僅包裹內容 */
+}
+
+/* 第一欄股票名稱則允許自動延展 */
+#stockTable td:first-child {
+    width: auto;
+    white-space: normal;
+}
+
+.dividend-btn:hover {
+    background-color: #dbeafe;
+    border-color: #93c5fd;
+}
+
+.total-value {
+    font-weight: bold;
+    color: #e53e3e;
+    font-size: 1.2rem;
+}
+
+/* 歷年股利展開列 */
+.history-row td {
+    background-color: var(--hover-bg);
+    padding: 16px;
+    font-size: 1rem;
+    color: #555;
+    animation: slideDown 0.3s ease-out;
+}
+
+.history-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 8px;
+}
+
+.history-tag {
+    background: white;
+    border: 1px solid var(--border-color);
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-weight: bold;
+}
+
+@keyframes slideDown {
+    from { opacity: 0; transform: translateY(-5px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+/* =========================================
+   💡 頂部功能區 (名詞解釋 & 淘汰查詢)
+   ========================================= */
+.top-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    margin-bottom: 10px;
+}
+
+/* --- 統一高度設定，提升手機觸控體驗 --- */
+.action-btn {
+    height: 40px; /* 🌟 強制統一高度 */
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 16px;
+    border-radius: 8px;
+    text-decoration: none;
+    font-size: 0.95rem; /* 字體稍微放大，方便閱讀 */
+    font-weight: bold;
+    border: none;
+    cursor: pointer;
+    box-sizing: border-box; /* 確保 padding 不會撐破高度 */
+}
+#glossaryBtn { background: #EBF8FF; color: #2B6CB0; }
+.search-link { background: #EDF2F7; color: #4A5568; }
+
+/* 過期頁籤特殊色 */
+[data-target="expired_souvenir_stocks"] {
+    opacity: 0.7;
+    background-color: #EDF2F7;
+}
+
+/* Modal 背景遮罩 */
+.modal-overlay {
+    display: none; /* 預設隱藏 */
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.6); /* 半透明黑底 */
+    z-index: 9999;
+    justify-content: center;
+    align-items: center;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+/* 當加上 show class 時顯示並淡入 */
+.modal-overlay.show {
+    display: flex;
+    opacity: 1;
+}
+
+/* Modal 內容資訊卡片 */
+.modal-content {
+    background: var(--card-bg);
+    width: 90%;
+    max-width: 500px;
+    border-radius: 16px;
+    padding: 30px 25px;
+    position: relative;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+    transform: translateY(-20px);
+    transition: transform 0.3s ease;
+}
+
+/* 卡片滑入動畫 */
+.modal-overlay.show .modal-content {
+    transform: translateY(0);
+}
+
+/* [X] 關閉按鈕 (大觸控範圍) */
+.close-btn {
+    position: absolute;
+    top: 15px;
+    right: 20px;
+    font-size: 2.2rem;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--text-muted);
+    line-height: 1;
+    padding: 0 10px;
+}
+
+.close-btn:hover {
+    color: #e53e3e;
+}
+
+/* 名詞解釋標題與清單排版 */
+.modal-content h2 {
+    margin-top: 0;
+    text-align: center;
+    color: var(--text-main);
+    font-size: 1.5rem;
+    margin-bottom: 25px;
+}
+
+.glossary-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.glossary-list li {
+    margin-bottom: 20px;
+    font-size: 1.1rem;
+    line-height: 1.6;
+    color: #555;
+}
+
+/* 小標題設計 (重點強調) */
+.glossary-list strong {
+    display: block;
+    color: var(--primary-color);
+    font-size: 1.25rem;
+    margin-bottom: 6px;
+    background: #eef2f6;
+    padding: 6px 12px;
+    border-radius: 8px;
+    border-left: 5px solid var(--primary-color);
+}

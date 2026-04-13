@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>存股追蹤面板</title>
+    <link rel="stylesheet" href="stockstyle.css">
+    <link rel="icon"
+        href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📈</text></svg>">
+</head>
+
+<body>
+    <div class="container">
+        <header class="sticky-header">
+            <div class="header-main">
+                <div style="display: flex; align-items: baseline; gap: 12px;">
+                    <h1>📈 存股追蹤面板</h1>
+                    <span id="updateDate">最後更新：讀取中...</span>
+                </div>
+
+                <div class="top-actions">
+                    <button id="glossaryBtn" class="action-btn">💡 名詞解釋</button>
+                    <a href="stocksearch.html" class="action-btn search-link">🕵️‍♂️ 淘汰查詢</a>
+                </div>
+            </div>
+
+            <div class="calculator-bar">
+
+                <div class="input-group">
+                    <label for="sortSelect">排序：</label>
+                    <select id="sortSelect" style="width: 130px;">
+                        <option value="price_asc" selected>💰 股價(低)</option>
+                        <option value="dividend_desc">🔥 殖利率(高)</option>
+                        <option value="price_desc">💎 股價(高)</option>
+                    </select>
+                </div>
+
+                <div class="input-group">
+                    <label for="maxPriceInput">股價上限：</label>
+                    <input type="number" id="maxPriceInput" placeholder="例: 100" min="1" step="1" style="width: 70px;">
+                </div>
+
+                <div class="input-group">
+                    <label for="sharesInput">持有股數：</label>
+                    <input type="number" id="sharesInput" value="1000" min="1" step="1" style="width: 70px;">
+                </div>
+
+                <div class="result-summary">
+                    <span class="label">💰 預估總額：</span>
+                    <span id="calcTotalDividend" class="value">$0</span>
+                </div>
+
+            </div>
+        </header>
+
+        <div class="tabs">
+            <button class="tab-btn active" data-target="defensive_stocks">🛡️ 抗跌存股</button>
+            <button class="tab-btn" data-target="growth_stocks">🚀 穩健成長</button>
+            <button class="tab-btn" data-target="financial_stocks">🏦 金融專區</button>
+            <button class="tab-btn" data-target="souvenir_stocks">🎁 股東福利</button>
+            <button class="tab-btn" data-target="expired_souvenir_stocks" id="expiredTab">🕰️ 明年請早</button>
+        </div>
+        <div class="omni-search-section" style="margin-bottom: 25px; padding: 0 15px;">
+            <input type="text" id="omniSearchInput" class="search-box"
+                style="width: 100%; padding: 16px 20px; font-size: 1.1rem; border: 2px solid var(--primary-color); border-radius: 12px; box-sizing: border-box; box-shadow: 0 4px 10px rgba(74, 144, 226, 0.1);"
+                placeholder="🔍 輸入股票代號或名稱，一秒判定好壞..." autocomplete="off">
+            <div id="omniSearchResults" style="margin-top: 15px;"></div>
+        </div>
+        <div class="table-container">
+            <table id="stockTable">
+                <thead>
+                    <tr>
+                        <th>股票名稱</th>
+                        <th>股利金額</th>
+                        <th>預計領取</th>
+                    </tr>
+                </thead>
+                <tbody id="stockTableBody">
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div id="glossaryModal" class="modal-overlay">
+        <div class="modal-content" style="max-height: 80vh; overflow-y: auto;">
+            <button id="closeModalBtn" class="close-btn" aria-label="關閉視窗">&times;</button>
+            <h2>💡 股市名詞與圖示說明</h2>
+
+            <h3 style="color: var(--primary-color); border-bottom: 2px solid var(--border-color); padding-bottom: 5px;">
+                [ 專有名詞 ]</h3>
+            <ul class="glossary-list">
+                <li style="margin-bottom: 15px;">
+                    <strong style="display: block; color: var(--primary-color);">EPS (每股盈餘)</strong>
+                    公司幫你賺了多少錢。數字越高代表公司越會賺錢，是發放股利的底氣。
+                </li>
+                <li style="margin-bottom: 15px;">
+                    <strong style="display: block; color: var(--primary-color);">Beta 值 (大盤連動率)</strong>
+                    股票的脾氣。低於 0.8 代表抗跌穩健（適合存股）；大於 1.2 代表波動劇烈（適合價差）。
+                </li>
+                <li style="margin-bottom: 15px;">
+                    <strong style="display: block; color: var(--primary-color);">殖利率</strong>
+                    投資的利息回報率（預估股利 ÷ 股價）。這就像是銀行的定存利率。
+                </li>
+                <li style="margin-bottom: 15px;">
+                    <strong style="display: block; color: var(--primary-color);">填息天數</strong>
+                    除息後股價漲回原價的速度。天數越短，你能越快真正賺到這筆股利。
+                </li>
+            </ul>
+
+            <h3
+                style="color: var(--primary-color); border-bottom: 2px solid var(--border-color); padding-bottom: 5px; margin-top: 25px;">
+                [ 勳章圖示說明 ]</h3>
+            <ul class="glossary-list">
+                <li style="margin-bottom: 10px;"><strong>🏆 權值資優生：</strong>台灣 0050 成分股，龍頭企業。</li>
+                <li style="margin-bottom: 10px;"><strong>🏦 金控大本營：</strong>政府特許金控，獲利穩定的金融股。</li>
+                <li style="margin-bottom: 10px;"><strong>🔥 高息人氣王：</strong>最新殖利率表現優異。</li>
+                <li style="margin-bottom: 10px;"><strong>⚡ 閃電填息：</strong>平均在 30 天內填息完畢。</li>
+                <li style="margin-bottom: 10px;"><strong>🏅 配息長跑王：</strong>連續多年發放股利不中斷。</li>
+                <li style="margin-bottom: 10px;"><strong>🎁 股東紀念品：</strong>有發放實體生活用品，非商品卡。</li>
+                <li style="margin-bottom: 10px;"><strong>⚠️ 波動警示：</strong>歷年股息不穩定，需注意風險。</li>
+                <li>
+                    <strong>💎 真金白銀模範生</strong>
+                    近五年「盈餘純度」平均極高。代表公司發放的股利是真的靠獲利賺來的，而非動用公積或借錢配息。
+                </li>
+                <li>
+                    <strong>🚨 企業重大變動</strong>
+                    偵測到近期有「股本大幅變動 (±5%)」或「合併、私募、增減資」等新聞事件，購入前建議先查閱相關公告。
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <script src="stockscript.js"></script>
+</body>
+
+</html>
