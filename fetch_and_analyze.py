@@ -330,17 +330,17 @@ def main():
 
     output_filename = "stock_data.json" 
     
-    # 🆕 擴充四頁籤的 JSON 結構
+    # 🆕 擴充 JSON 結構
     results = {
         "defensive_stocks": [], 
         "growth_stocks": [], 
         "financial_stocks": [], 
         "souvenir_stocks": [],  
-        "dropped_stocks": [], # 🆕 新增：跌出榜單
+        "recent_dropped_stocks": [], # 🆕 正名：近期移出名單
         "processed_symbols": [],
         "rejected_stocks": [],
         "last_update": ""
-}
+    }
     
     history_listed_counts = {} # 🆕 紀錄歷史上榜次數
     previous_good_stocks = {}  # 🆕 紀錄上週的合格名單
@@ -357,7 +357,32 @@ def main():
                         sym = s["symbol"]
                         previous_good_stocks[sym] = s
                         history_listed_counts[sym] = s.get("listed_count", 1)
-                        
+
+                # ==========================================
+                # 👇 任務一的程式碼貼在這裡！👇
+                # ==========================================
+                now = datetime.now()
+                # 讀取舊名單 (相容舊版 dropped_stocks 或新版 recent_dropped_stocks)
+                dropped_list = saved_data.get("recent_dropped_stocks", saved_data.get("dropped_stocks", [])) 
+                recent_dropped = []
+                
+                for s in dropped_list:
+                    drop_date_str = s.get("drop_date", "")
+                    if drop_date_str:
+                        drop_date = datetime.strptime(drop_date_str, "%Y-%m-%d")
+                        if (now - drop_date).days <= 30: # 僅保留 30 天內的
+                            recent_dropped.append(s)
+                    else:
+                        # 若無日期 (剛升級)，補上今日並保留
+                        s["drop_date"] = now.strftime("%Y-%m-%d")
+                        recent_dropped.append(s)
+                
+                # 將清理後的名單寫回準備輸出的 results 字典中
+                results["recent_dropped_stocks"] = recent_dropped
+                # ==========================================
+                # 👆 任務一結束 👆
+                # ==========================================
+
             print(f"✅ 成功載入歷史紀錄！(本週執行將強制重新向 yfinance 獲取最新數據)")
         except Exception as e:
             print(f"⚠️ 讀取存檔失敗 ({e})，將以全新進度開始。")
@@ -390,21 +415,27 @@ def main():
             for attempt in range(max_retries):
                 try:
                     # ==========================================
-                    # 🛡️ Stage 1: 基礎流動性快篩 (Speed Funnel) & 均線計算
+                    # 🛡️ Stage 1: 基礎流動性快篩 (門檻下調至 300 張) & 均線計算
                     # ==========================================
-                    hist_1y = ticker_obj.history(period="1y") # 🆕 改為抓取 1 年資料
+                    hist_1y = ticker_obj.history(period="1y") # 👈 這裡宣告 hist_1y，確保後續抓得到資料
                     if hist_1y.empty or len(hist_1y) < 20:
                         reject_reason = "Stage 1 淘汰：無足夠的近期交易資料"
                         fetch_success = True; break
                         
                     avg_vol_20d = hist_1y['Volume'].tail(20).mean()
-                    if avg_vol_20d < 500000: 
+                    
+                    # 🆕 任務一：門檻由 500,000 (500張) 下調至 300,000 (300張)
+                    if avg_vol_20d < 300000: 
                         reject_reason = f"Stage 1 淘汰：流動性不足 (近20日均量僅 {avg_vol_20d/1000:.0f} 張)"
                         fetch_success = True; break
                         
+                    # 🆕 判定是否為冷門穩健標的 (300~500張之間)
+                    # ⚠️ 加上 bool() 強制轉換，避免 Numpy 型態導致 JSON 存檔崩潰
+                    is_niche_stable = bool(300000 <= avg_vol_20d < 500000)
+                    
                     latest_price = float(hist_1y['Close'].iloc[-1]) 
                     
-                    # 🆕 計算均線 (半年線 120MA, 年線 240MA)
+                    # 計算均線 (半年線 120MA, 年線 240MA)
                     ma_120 = hist_1y['Close'].tail(120).mean() if len(hist_1y) >= 120 else None
                     ma_240 = hist_1y['Close'].tail(240).mean() if len(hist_1y) >= 240 else None
                         
@@ -481,9 +512,39 @@ def main():
                     # 🆕 計算累積上榜次數
                     current_listed_count = history_listed_counts.get(code, 0) + 1
 
+                    # ==========================================
+                    # 🆕 任務二：半年歸零與長青樹判定
+                    # ==========================================
+                    now_date = datetime.now()
+                    prev_data = previous_good_stocks.get(code, {})
+                    last_hit_str = prev_data.get("last_hit_date", "")
+                    history_hits = prev_data.get("history_hits", [])
+
+                    current_listed_count = history_listed_counts.get(code, 0)
+
+                    # 180 天歸零判定
+                    if last_hit_str:
+                        last_hit = datetime.strptime(last_hit_str, "%Y-%m-%d")
+                        if (now_date - last_hit).days > 180:
+                            current_listed_count = 0 # 🚨 超過半年沒進榜，穩定度歸零重算
+                            history_hits = []
+
+                    current_listed_count += 1
+                    current_month_str = now_date.strftime("%Y-%m")
+                    if current_month_str not in history_hits:
+                        history_hits.append(current_month_str) # 紀錄本次達標月份
+                    if len(history_hits) > 24: 
+                        history_hits.pop(0) # 僅保留近兩年紀錄避免檔案過大
+
+                    # 皇冠判定：累計 >= 12 個月 且 近 12 個月內有 10 個月在榜
+                    recent_12_months = [(now_date.replace(day=1) - timedelta(days=i*30)).strftime("%Y-%m") for i in range(12)]
+                    hits_in_last_12 = sum(1 for m in recent_12_months if m in history_hits)
+                    is_evergreen = (current_listed_count >= 12) and (hits_in_last_12 >= 10)
+
                     stock_info = {
                         "symbol": code,
                         "name": name,
+                        "is_niche_stable": is_niche_stable, # 🆕 寫入冷門標籤
                         "listed_count": current_listed_count, # 🆕 寫入上榜次數
                         "latest_price": latest_price,
                         "avg_vol_20d_sheets": round(avg_vol_20d / 1000, 0),
