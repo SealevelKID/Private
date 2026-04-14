@@ -82,6 +82,10 @@ const renderTable = () => {
         if (stock.is_long_dividend) medals += '<span title="🏅 配息長跑王" style="cursor:help; margin-left: 4px;">🏅</span>';
         if (stock.pure_eps_ratio_avg >= 95.0) medals += '<span title="💎 真金白銀：純度極高" style="cursor:help; margin-left: 4px;">💎</span>';
         if (stock.capital_event || stock.major_news_event) medals += '<span title="🚨 企業重大變動" style="cursor:help; margin-left: 4px;">🚨</span>';
+        // 🆕 任務二：新增冷門穩健標籤 (冰塊圖示)
+        if (stock.is_niche_stable) {
+            medals += '<span title="🧊 冷門穩健標的：交易量較低，建議分批布局" style="cursor:help; margin-left: 4px;">🧊</span>';
+        }
 
         // 🎁 紀念品 UI 區塊
         let souvenirTag = '';
@@ -116,11 +120,16 @@ const renderTable = () => {
         const shares = sharesInput ? (parseFloat(sharesInput.value) || 1000) : 1000;
         let expectedTotal = stock.dividend_amount !== undefined ? (stock.dividend_amount * shares).toLocaleString() : '---';
 
+        // 🆕 任務三：皇冠圖示與 Google Finance 走勢圖連結
+        const evergreenCrown = stock.is_evergreen ? '<span title="👑 年度長青樹" style="cursor:help; margin-right: 6px;">👑</span>' : '';
+        const financeUrl = `https://www.google.com/finance/quote/${stock.symbol}:TPE`;
+
         return `
             <tr data-symbol="${stock.symbol}">
                 <td>
-                    <div style="margin-bottom: 6px; font-size: 1.15rem;">
-                        <a href="${stock.google_news_url || '#'}" target="_blank" class="stock-link">
+                    <div style="margin-bottom: 6px; font-size: 1.15rem; display: flex; align-items: center;">
+                        ${evergreenCrown}
+                        <a href="${financeUrl}" target="_blank" class="stock-link" title="點擊查看股價走勢">
                             ${stock.name} (${stock.symbol})
                         </a>
                         ${medals}
@@ -200,17 +209,18 @@ document.querySelector('#stockTable').addEventListener('click', (e) => {
         const historyTr = document.createElement('tr');
         historyTr.classList.add('history-row');
 
-        // 🛠️ 修正錯誤：colspan 必須改為 3，並套用圖片中的簡潔樣式
+        // 🆕 任務三：體檢面板深度收納 (包含累計月數與新聞按鈕)
         historyTr.innerHTML = `
             <td colspan="3" style="padding: 16px 20px; background-color: #fafbfc;"> 
-                <div style="margin-bottom: 12px; color: #4A5568; font-size: 1rem; display: flex; align-items: center; gap: 6px;">
-                    📊 股票體檢：
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                    <div style="color: #4A5568; font-size: 1rem; font-weight: bold;">
+                        📊 股票體檢 <span style="font-size: 0.9rem; color: #b7791f; margin-left: 8px;">(⭐ 歷史累計在榜：${stock.listed_count || 1} 個月)</span>
+                    </div>
+                    <a href="${stock.google_news_url || '#'}" target="_blank" style="background: #edf2f7; color: #4a5568; font-size: 0.85rem; font-weight: bold; padding: 6px 12px; border-radius: 6px; text-decoration: none; border: 1px solid #e2e8f0;">
+                        📰 相關新聞
+                    </a>
                 </div>
                 <div class="history-tags" style="display: flex; gap: 12px; flex-wrap: wrap;">
-                    <span class="history-tag" style="background: #fffff0; border-color: #f6e05e; color: #b7791f; font-weight: bold;">
-                        🏆 連續上榜：${stock.listed_count || 1} 次
-                    </span>
-                    
                     <span class="history-tag" style="color: #c53030; font-weight: bold; border-color: #feb2b2;">
                         殖利率：${stock.dividend_yield_pct}%
                     </span>
