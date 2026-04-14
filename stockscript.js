@@ -81,7 +81,7 @@ const renderTable = () => {
         if (stock.is_fast_fill) medals += '<span title="⚡ 閃電填息" style="cursor:help; margin-left: 4px;">⚡</span>';
         if (stock.is_long_dividend) medals += '<span title="🏅 配息長跑王" style="cursor:help; margin-left: 4px;">🏅</span>';
         if (stock.pure_eps_ratio_avg >= 95.0) medals += '<span title="💎 真金白銀：純度極高" style="cursor:help; margin-left: 4px;">💎</span>';
-        if (stock.capital_event || stock.major_news_event) medals += '<span title="🚨 企業重大變動" style="cursor:help; margin-left: 4px;">🏛️</span>';
+        if (stock.capital_event || stock.major_news_event) medals += '<span title="🚨 企業重大變動" style="cursor:help; margin-left: 4px;">🚨</span>';
 
         // 🎁 紀念品 UI 區塊
         let souvenirTag = '';
@@ -93,6 +93,16 @@ const renderTable = () => {
                 <div style="margin-top: 8px;">
                     <div style="font-size: 0.85rem; padding: 6px 12px; border-radius: 6px; border: 1px solid ${isExpired ? '#d1d5db' : '#fde68a'}; background-color: ${isExpired ? '#f3f4f6' : '#fef3c7'}; color: ${isExpired ? '#6b7280' : '#b45309'}; display: inline-block;">
                         🎁 <strong>紀念品：</strong>${displayGift} ${dateStr}
+                    </div>
+                </div>`;
+        }
+        // 🆕 任務四：跌出榜單警示 UI 區塊
+        let droppedWarning = '';
+        if (currentCategory === 'dropped_stocks') {
+            droppedWarning = `
+                <div style="margin-top: 8px;">
+                    <div style="font-size: 0.9rem; padding: 6px 12px; border-radius: 6px; border: 1px solid #feb2b2; background-color: #fff5f5; color: #c53030; display: inline-block;">
+                        <strong>⚠️ 淘汰原因：</strong>${stock.reason || '未達標'}
                     </div>
                 </div>`;
         }
@@ -119,8 +129,9 @@ const renderTable = () => {
                         現價：${latestPrice} 元
                     </div>
                     ${souvenirTag}
-                </td>
+                    ${droppedWarning} </td>
                 <td style="vertical-align: middle; text-align: center;">
+                    <div style="font-size: 0.8rem; color: #718096; margin-bottom: 4px;">近一年累計</div>
                     <button class="dividend-btn" data-symbol="${stock.symbol}">
                         約 ${displayAmount} 元
                     </button>
@@ -144,6 +155,17 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
         renderTable();
     });
 });
+// 🆕 頂部「跌出榜單」按鈕切換邏輯
+const droppedTabBtn = document.getElementById('droppedTabBtn');
+if (droppedTabBtn) {
+    droppedTabBtn.addEventListener('click', () => {
+        // 移除下方所有主頁籤的亮起狀態
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        // 將當前類別切換為跌出榜單並重新渲染表格
+        currentCategory = 'dropped_stocks';
+        renderTable();
+    });
+}
 
 // 修改後的點擊展開邏輯
 document.querySelector('#stockTable').addEventListener('click', (e) => {
@@ -185,6 +207,10 @@ document.querySelector('#stockTable').addEventListener('click', (e) => {
                     📊 股票體檢：
                 </div>
                 <div class="history-tags" style="display: flex; gap: 12px; flex-wrap: wrap;">
+                    <span class="history-tag" style="background: #fffff0; border-color: #f6e05e; color: #b7791f; font-weight: bold;">
+                        🏆 連續上榜：${stock.listed_count || 1} 次
+                    </span>
+                    
                     <span class="history-tag" style="color: #c53030; font-weight: bold; border-color: #feb2b2;">
                         殖利率：${stock.dividend_yield_pct}%
                     </span>
