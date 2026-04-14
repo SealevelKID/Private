@@ -21,7 +21,8 @@
 
                 <div class="top-actions">
                     <button id="glossaryBtn" class="action-btn">💡 名詞解釋</button>
-                    <button id="droppedTabBtn" class="action-btn" data-target="dropped_stocks" style="background: #FFF5F5; color: #C53030; border: 1px solid #FEB2B2;">⚠️ 跌出榜單</button>
+                    <button id="droppedTabBtn" class="action-btn" data-target="dropped_stocks"
+                        style="background: #FFF5F5; color: #C53030; border: 1px solid #FEB2B2;">⚠️ 跌出榜單</button>
                 </div>
             </div>
 
@@ -60,7 +61,7 @@
             <button class="tab-btn" data-target="financial_stocks">🏦 金融專區</button>
             <button class="tab-btn" data-target="souvenir_stocks">🎁 股東福利</button>
             <button class="tab-btn" data-target="expired_souvenir_stocks" id="expiredTab">🕰️ 明年請早</button>
-            </div>
+        </div>
         <div class="omni-search-section" style="margin-bottom: 25px; padding: 0 15px;">
             <input type="text" id="omniSearchInput" class="search-box"
                 style="width: 100%; padding: 16px 20px; font-size: 1.1rem; border: 2px solid var(--primary-color); border-radius: 12px; box-sizing: border-box; box-shadow: 0 4px 10px rgba(74, 144, 226, 0.1);"
@@ -127,10 +128,20 @@
                     <strong>🚨 企業重大變動</strong>
                     偵測到近期有「股本大幅變動 (±5%)」或「合併、私募、增減資」等新聞事件，購入前建議先查閱相關公告。
                 </li>
+                <li style="margin-bottom: 10px;">
+                    <strong>🧊 冷門穩健：</strong>近 20 日成交量介於 300 至 500 張之間。雖然市場關注度較低，但財務指標合格，建議分批布局以降低流動性風險。
+                </li>
             </ul>
         </div>
     </div>
+    <footer
+        style="margin-top: 40px; padding: 20px 15px; text-align: center; border-top: 1px solid var(--border-color);">
+        <p style="font-size: 0.8rem; color: #888; line-height: 1.6;">
+            ⚠️ 提醒： 本站數據僅供參考，不保證絕對正確。購買前請務必自行核實最新營收與公告，並注意冷門股流動性風險。投資盈虧自負。
+        </p>
+    </footer>
 
+    </div>
     <script src="stockscript.js"></script>
 </body>
 
