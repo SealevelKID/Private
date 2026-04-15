@@ -381,13 +381,13 @@ if (omniSearchInput && omniSearchResults) {
                 }
 
                 return `
-                    <div style="background: ${bgColor}; border: 1px solid ${borderColor}; padding: 12px 16px; border-radius: 8px; margin-bottom: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-                            <strong style="font-size: 1.15rem; color: ${titleColor};">
-                                <a href="${stock.google_news_url || '#'}" target="_blank" style="color: inherit; text-decoration: none;">
-                                    ${stock.name} (${stock.symbol})
-                                </a>
-                            </strong>
+    <div style="background: ${bgColor}; border: 1px solid ${borderColor}; padding: 12px 16px; border-radius: 8px; margin-bottom: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+            <strong style="font-size: 1.15rem; color: ${titleColor};">
+                <a href="https://tw.stock.yahoo.com/quote/${stock.symbol}" target="_blank" style="color: inherit; text-decoration: none;" title="點擊查看 Yahoo 股市行情">
+                    ${stock.name} (${stock.symbol})
+                </a>
+            </strong>
                             <span style="font-size: 0.9rem; font-weight: bold; color: ${titleColor};">
                                 ${stock.category_labels.join(' / ')}
                             </span>
