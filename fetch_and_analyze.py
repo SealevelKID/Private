@@ -252,7 +252,9 @@ def get_dividend_stats(ticker_obj, symbol, latest_price):
 def get_recent_news(symbol, name):
     """取得過去 7 天內的 Google 財經新聞，並偵測重大風險事件"""
     try:
-        query = urllib.parse.quote(f"{symbol} {name}")
+        # 🆕 任務一：精準打擊！利用 site: 指令限定只抓取 Yahoo 股市與三大權威財經網
+        search_query = f"{symbol} {name} (site:tw.stock.yahoo.com OR site:cnyes.com OR site:money.udn.com)"
+        query = urllib.parse.quote(search_query)
         url = f"https://news.google.com/rss/search?q={query}&hl=zh-TW&gl=TW&ceid=TW:zh-Hant"
         
         # 🚨 定義重大風險關鍵字
@@ -520,7 +522,17 @@ def main():
                     last_hit_str = prev_data.get("last_hit_date", "")
                     history_hits = prev_data.get("history_hits", [])
 
+                    # 🆕 專屬五月上線的自動洗白機制
+                    # 將所有 "2026-05" 以前的測試月份強制刪除
+                    original_len = len(history_hits)
+                    history_hits = [m for m in history_hits if m >= "2026-05"]
+                    
                     current_listed_count = history_listed_counts.get(code, 0)
+                    
+                    # 如果過濾後紀錄空了，但原本有資料，代表之前都是四月的測試數據，次數歸零！
+                    if len(history_hits) == 0 and original_len > 0:
+                        current_listed_count = 0
+                        last_hit_str = "" # 同時清空最後達標日，當作全新的一張白紙
 
                     # 180 天歸零判定
                     if last_hit_str:
