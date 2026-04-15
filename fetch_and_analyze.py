@@ -681,12 +681,15 @@ def main():
             if reject_reason:
                 print(f"  -> 剔除: {reject_reason}")
                 
-                # 🆕 任務四：若上週是合格名單，本週被淘汰，則加入 dropped_stocks
+                # 🆕 任務四：若上週是合格名單，本週被淘汰，則加入 recent_dropped_stocks
                 if code in previous_good_stocks:
                     dropped_info = previous_good_stocks[code].copy()
                     dropped_info["reason"] = reject_reason
                     dropped_info["listed_count"] = 0 # 重置穩定度
-                    results["dropped_stocks"].append(dropped_info)
+                    # 👇 1. 補上今天的淘汰日期，讓 30 天保留機制能計算
+                    dropped_info["drop_date"] = datetime.now().strftime("%Y-%m-%d") 
+                    # 👇 2. 修改為正確的新名稱 recent_dropped_stocks
+                    results["recent_dropped_stocks"].append(dropped_info)
 
                 results["rejected_stocks"].append({
                     "symbol": code,
