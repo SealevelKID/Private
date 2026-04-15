@@ -158,18 +158,22 @@ header h1 {
     box-shadow: 0 4px 10px rgba(74, 144, 226, 0.3);
 }
 
-/* 表格設計 */
+/* 表格容器設計 */
 .table-container {
     background: var(--card-bg);
     border-radius: 12px;
     box-shadow: 0 4px 6px rgba(0,0,0,0.05);
-    overflow: hidden;
+    /* 👇 移除原本的 overflow: hidden，替換為橫向滑動支援 */
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
 }
 
 table {
     width: 100%;
     border-collapse: collapse;
     text-align: left;
+    /* 👇 新增這行，確保小螢幕下表格內容不會被強制擠壓換行而混亂 */
+    white-space: nowrap; 
 }
 
 th, td {
