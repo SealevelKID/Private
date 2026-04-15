@@ -10,9 +10,10 @@ permissions:
   pages: write
   id-token: write
 
-# 設定全域環境變數，解決 2026 年的 Node.js 棄用警告
+# 設定全域環境變數，解決 2026 年的 Node.js 棄用警告與時區同步
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  TZ: Asia/Taipei  # 🆕 新增：強制指定虛擬主機為台灣時區
 
 jobs:
   update-stock:
