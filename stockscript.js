@@ -114,7 +114,7 @@ const renderTable = () => {
         }
         // 🆕 任務四：跌出榜單警示 UI 區塊
         let droppedWarning = '';
-        if (currentCategory === 'dropped_stocks') {
+        if (currentCategory === 'recent_dropped_stocks') { // 👈 這裡改成 recent_dropped_stocks
             droppedWarning = `
                 <div style="margin-top: 8px;">
                     <div style="font-size: 0.9rem; padding: 6px 12px; border-radius: 6px; border: 1px solid #feb2b2; background-color: #fff5f5; color: #c53030; display: inline-block;">
@@ -180,10 +180,9 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
 const droppedTabBtn = document.getElementById('droppedTabBtn');
 if (droppedTabBtn) {
     droppedTabBtn.addEventListener('click', () => {
-        // 移除下方所有主頁籤的亮起狀態
         document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-        // 將當前類別切換為跌出榜單並重新渲染表格
-        currentCategory = 'dropped_stocks';
+        // 👇 將當前類別切換為 recent_dropped_stocks 並重新渲染表格
+        currentCategory = 'recent_dropped_stocks'; 
         renderTable();
     });
 }
