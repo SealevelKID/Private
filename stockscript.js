@@ -47,7 +47,7 @@ const renderTable = () => {
             return false;
         }
 
-        return true; 
+        return true;
     });
 
     // 🚀 新增 3：執行排序邏輯
@@ -79,12 +79,24 @@ const renderTable = () => {
         if (stock.is_financial_holding) medals += '<span title="🏦 金控大本營" style="cursor:help; margin-left: 4px;">🏦</span>';
         if (stock.is_super_yield && !stock.is_dividend_spike) medals += '<span title="🔥 高息人氣王" style="cursor:help; margin-left: 4px;">🔥</span>';
         if (stock.is_fast_fill) medals += '<span title="⚡ 閃電填息" style="cursor:help; margin-left: 4px;">⚡</span>';
-        if (stock.is_long_dividend) medals += '<span title="🏅 配息長跑王" style="cursor:help; margin-left: 4px;">🏅</span>';
+        if (stock.is_long_dividend) medals += '<span title="🏅 配息長跑" style="cursor:help; margin-left: 4px;">🏅</span>';
         if (stock.pure_eps_ratio_avg >= 95.0) medals += '<span title="💎 真金白銀：純度極高" style="cursor:help; margin-left: 4px;">💎</span>';
-        if (stock.capital_event || stock.major_news_event) medals += '<span title="🚨 企業重大變動" style="cursor:help; margin-left: 4px;">🚨</span>';
+        if (stock.capital_event || stock.major_news_event) medals += '<span title="🚨 重大變動" style="cursor:help; margin-left: 4px;">🚨</span>';
+        
+        // 👇 在這裡新增 🌤️ 偶發長貼息 (豁免股) 的勳章
+        if (stock.is_outlier_warning) medals += '<span title="🌤️ 偶發長貼息：長期體質優良，僅近三年曾有單次貼息較長" style="cursor:help; margin-left: 4px;">🌤️</span>';
+
         // 🆕 任務二：新增冷門穩健標籤 (冰塊圖示)
         if (stock.is_niche_stable) {
-            medals += '<span title="🧊 冷門穩健標的：交易量較低，建議分批布局" style="cursor:help; margin-left: 4px;">🧊</span>';
+            medals += '<span title="🧊 冷門穩健股：交易量較低，建議分批布局" style="cursor:help; margin-left: 4px;">🧊</span>';
+            // --- 增加：統計數據顯示 (建議放在價格下方) ---
+            const statsHtml = `
+    <div style="font-size: 0.85em; color: #666; margin-top: 5px;">
+        🎯 上榜: <strong>${stock.listed_count || 0}</strong> 月 | 
+        🛑 貼息紅線: <strong>${stock.failed_fill_count || 0}</strong> 次
+    </div>
+`;
+        
         }
 
         // 🎁 紀念品 UI 區塊
@@ -92,7 +104,7 @@ const renderTable = () => {
         if (displayGift !== '') {
             const isExpired = currentCategory === 'expired_souvenir_stocks';
             const dateStr = stock.gift_last_buy_date ? `<span style="color: ${isExpired ? '#9ca3af' : '#dc2626'}; margin-left: 8px;">⏳ 最後買進：${stock.gift_last_buy_date}</span>` : '';
-            
+
             souvenirTag = `
                 <div style="margin-top: 8px;">
                     <div style="font-size: 0.85rem; padding: 6px 12px; border-radius: 6px; border: 1px solid ${isExpired ? '#d1d5db' : '#fde68a'}; background-color: ${isExpired ? '#f3f4f6' : '#fef3c7'}; color: ${isExpired ? '#6b7280' : '#b45309'}; display: inline-block;">
@@ -114,7 +126,7 @@ const renderTable = () => {
         // 🚀 防呆機制：如果沒有抓到金額，顯示 ---
         let displayAmount = stock.dividend_amount !== undefined ? stock.dividend_amount : '---';
         let latestPrice = stock.latest_price !== undefined ? stock.latest_price : '---';
-        
+
         // 取得目前的持股數來計算預計領取總額
         const sharesInput = document.getElementById('sharesInput');
         const shares = sharesInput ? (parseFloat(sharesInput.value) || 1000) : 1000;
@@ -195,10 +207,10 @@ document.querySelector('#stockTable').addEventListener('click', (e) => {
     });
 
     // 如果點擊的是原本就打開的，上面已經移除了，就直接結束動作
-    if (isAlreadyOpen) return; 
+    if (isAlreadyOpen) return;
 
     let allStocks = [];
-    Object.values(stockData).forEach(cat => { if(Array.isArray(cat)) allStocks = allStocks.concat(cat); });
+    Object.values(stockData).forEach(cat => { if (Array.isArray(cat)) allStocks = allStocks.concat(cat); });
     const stock = allStocks.find(s => s.symbol === symbol);
 
     if (stock) {
@@ -232,7 +244,7 @@ document.querySelector('#stockTable').addEventListener('click', (e) => {
                     </span>
                 </div>
             </td>`;
-        
+
         row.after(historyTr);
     }
 });
@@ -253,7 +265,7 @@ const calculateTotal = () => {
     if (!sharesInput || !totalResult) return;
 
     const shares = parseFloat(sharesInput.value) || 0;
-    
+
     // 1. 更新頂部總額 (根據當前點開的股票)
     if (selectedStockForCalc && selectedStockForCalc.dividend_amount !== undefined) {
         const totalDividend = selectedStockForCalc.dividend_amount * shares;
@@ -266,9 +278,9 @@ const calculateTotal = () => {
     document.querySelectorAll('#stockTableBody tr:not(.history-row)').forEach(tr => {
         const symbol = tr.getAttribute('data-symbol');
         let allStocks = [];
-        Object.values(stockData).forEach(cat => { if(Array.isArray(cat)) allStocks = allStocks.concat(cat); });
+        Object.values(stockData).forEach(cat => { if (Array.isArray(cat)) allStocks = allStocks.concat(cat); });
         const stock = allStocks.find(s => s.symbol === symbol);
-        
+
         if (stock && stock.dividend_amount !== undefined) {
             const expectedTd = tr.querySelector('.expected-dividend-cell');
             if (expectedTd) {
