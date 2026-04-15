@@ -173,11 +173,11 @@ def get_advanced_defense_stats(ticker_obj, eps_data, dividend_history):
 
     return pure_eps_ratio_avg, capital_event
 
-# 👇 就是這裡！請補上這行宣告
 def get_dividend_stats(ticker_obj, symbol, latest_price):
     try:
         dividends = ticker_obj.dividends
-        if dividends.empty: return [], None, 0, False, False, False, False, 0, False, 0
+        # 🆕 擴充回傳兩個布林值: is_outlier_warning, is_fast_fill，發生錯誤時預設給 False
+        if dividends.empty: return [], None, 0, False, False, False, False, 0, False, 0, False, False
             
         one_year_ago = datetime.now(dividends.index.tzinfo) - timedelta(days=365)
         recent_1y_divs = dividends[dividends.index >= one_year_ago]
@@ -211,46 +211,78 @@ def get_dividend_stats(ticker_obj, symbol, latest_price):
             if yearly_divs.iloc[-1] > (div_median * 1.5):
                 is_dividend_spike = True
 
+        # ==========================================
+        # 🆕 任務 1.5：拉長 5 年歷史填息中位數計算
+        # ==========================================
+        hist_prices_5y = ticker_obj.history(start=five_years_ago - timedelta(days=30))
+        fill_days_list_5y = []
+        
+        for date, amount in divs_5y.items():
+            prices_before = hist_prices_5y[hist_prices_5y.index < date]
+            if not prices_before.empty:
+                target_price = prices_before['Close'].iloc[-1]
+                prices_after = hist_prices_5y[hist_prices_5y.index >= date]
+                filled = prices_after[prices_after['Close'] >= target_price]
+                if not filled.empty:
+                    fill_days_list_5y.append((filled.index[0] - date).days)
+
+        median_fill_days = np.median(fill_days_list_5y) if fill_days_list_5y else 999
+
+        # ==========================================
+        # 🆕 任務 1.5：近 3 年紅線抽驗與 Fast Fill 判定
+        # ==========================================
         three_years_ago = datetime.now(dividends.index.tzinfo) - timedelta(days=3*365)
         recent_divs = dividends[dividends.index >= three_years_ago]
-        # 👇 回傳值補上 total_div_1y
-        if recent_divs.empty: return [], None, dividend_yield, False, is_long_dividend_10y, is_long_dividend_15y, has_volatility, 0, is_dividend_spike, total_div_1y
+        
+        if recent_divs.empty: 
+            return [], None, dividend_yield, False, is_long_dividend_10y, is_long_dividend_15y, has_volatility, 0, is_dividend_spike, total_div_1y, False, False
 
         current_year = datetime.now().year
         has_current_year = any(d.year == current_year for d in recent_divs.index)
         is_estimated = False
-        history, fill_days_list = [], []
-        hist_prices = ticker_obj.history(start=three_years_ago - timedelta(days=30))
+        history = []
         
+        fault_count_90d = 0   # 統計超過 90 天的次數
+        is_fast_fill = True   # 預設為優良，遇到 > 30 天即破功
+        now_tz = datetime.now(dividends.index.tzinfo)
+
         for date, amount in recent_divs.items():
             date_str = date.strftime("%Y-%m-%d")
             history.append({"ex_dividend_date": date_str, "amount": float(amount)})
             
-            prices_before = hist_prices[hist_prices.index < date]
+            prices_before = hist_prices_5y[hist_prices_5y.index < date] # 沿用 5 年價格表
             if not prices_before.empty:
                 target_price = prices_before['Close'].iloc[-1]
-                prices_after = hist_prices[hist_prices.index >= date]
+                prices_after = hist_prices_5y[hist_prices_5y.index >= date]
                 filled = prices_after[prices_after['Close'] >= target_price]
+                
                 if not filled.empty:
-                    fill_date = filled.index[0]
-                    days_to_fill = (fill_date - date).days
-                    fill_days_list.append(days_to_fill)
-        
-        median_fill_days = np.median(fill_days_list) if fill_days_list else 999
-        failed_fill_count = sum(1 for days in fill_days_list if days > 120)
+                    days_to_fill = (filled.index[0] - date).days
+                    if days_to_fill > 90:
+                        fault_count_90d += 1
+                    if days_to_fill > 30:
+                        is_fast_fill = False
+                else:
+                    # 尚未填息：計算至今經過天數是否超過 90 天
+                    days_since_ex = (now_tz - date).days
+                    if days_since_ex > 90:
+                        fault_count_90d += 1
+                    is_fast_fill = False # 尚未填息就不算 fast fill
+
+        # 單次容錯判定：剛好 1 次失誤，且 5 年中位數極為優秀(<=15)
+        is_outlier_warning = (fault_count_90d == 1) and (median_fill_days <= 15)
         
         if not has_current_year and len(history) > 0:
             history.append({"ex_dividend_date": f"{current_year}-XX-XX", "amount": float(history[-1]['amount']), "is_estimated": True})
             is_estimated = True
             
-        # 👇 回傳值補上 total_div_1y
-        return history, round(median_fill_days, 1), round(dividend_yield, 2), is_estimated, is_long_dividend_10y, is_long_dividend_15y, has_volatility, failed_fill_count, is_dividend_spike, total_div_1y
+        # 👇 回傳值擴充，加上 is_outlier_warning 與 is_fast_fill
+        return history, round(median_fill_days, 1), round(dividend_yield, 2), is_estimated, is_long_dividend_10y, is_long_dividend_15y, has_volatility, fault_count_90d, is_dividend_spike, total_div_1y, is_outlier_warning, is_fast_fill
     except Exception:
-        # 👇 錯誤時補上 0
-        return [], None, 0, False, False, False, False, 0, False, 0
+        return [], None, 0, False, False, False, False, 0, False, 0, False, False
 
 def get_recent_news(symbol, name):
-    """取得過去 7 天內的財經新聞，並偵測重大風險事件"""
+    """取得過去 7 天內的 Google 財經新聞，並偵測重大風險事件"""
     try:
         # 🆕 任務一：精準打擊！利用 site: 指令限定只抓取 Yahoo 股市與三大權威財經網
         search_query = f"{symbol} {name} (site:tw.stock.yahoo.com OR site:cnyes.com OR site:money.udn.com)"
@@ -459,8 +491,8 @@ def main():
                         reject_reason = "無法計算大盤連動 Beta 值"
                         fetch_success = True; break
                         
-                    # ⚠️ 注意等號左邊最後加了 total_div_1y
-                    dividend_history, median_fill_days, dividend_yield, is_estimated, is_long_dividend_10y, is_long_dividend_15y, has_volatility, failed_fill_count, is_dividend_spike, total_div_1y = get_dividend_stats(ticker_obj, yf_symbol, latest_price)
+                    # 🆕 擴充承接變數，加入 is_outlier_warning 與 is_fast_fill
+                    dividend_history, median_fill_days, dividend_yield, is_estimated, is_long_dividend_10y, is_long_dividend_15y, has_volatility, fault_count_90d, is_dividend_spike, total_div_1y, is_outlier_warning, is_fast_fill = get_dividend_stats(ticker_obj, yf_symbol, latest_price)
                     
                     if median_fill_days is None: 
                         reject_reason = "缺乏配息紀錄或除息資料"
@@ -470,8 +502,17 @@ def main():
                         reject_reason = f"利息太低：最新殖利率僅 {dividend_yield:.2f}% (未達 1.5% 基本門檻)"
                         fetch_success = True; break
 
-                    if median_fill_days > 5:
-                        reject_reason = f"填息太慢：歷史填息中位數 {median_fill_days} 天 (超過 5 天嚴格門檻)"
+                    # ==========================================
+                    # 🆕 任務 1.5：填息紅線防禦與單次豁免判定
+                    # ==========================================
+                    if fault_count_90d > 0:
+                        if is_outlier_warning:
+                            print(f"  ⚠️ [豁免發動] 觸發 90 天填息紅線 1 次，但 5 年中位數優良 ({median_fill_days}天)，給予豁免！")
+                        else:
+                            reject_reason = f"填息紅線：近 3 年有 {fault_count_90d} 次填息超過 90 天 (或嚴重貼息中)"
+                            fetch_success = True; break
+                    elif median_fill_days > 15:
+                        reject_reason = f"長線填息偏慢：5 年歷史填息中位數 {median_fill_days} 天 (大於 15 天嚴格門檻)"
                         fetch_success = True; break
                     
                     print(f"  [Debug] 🎉 基礎達標！均量 {avg_vol_20d/1000:.0f}張 | 殖利率 {dividend_yield:.2f}% | 填息中位數 {median_fill_days}天 | Beta {beta}")
@@ -556,15 +597,15 @@ def main():
                     stock_info = {
                         "symbol": code,
                         "name": name,
-                        "is_niche_stable": is_niche_stable, # 🆕 寫入冷門標籤
-                        "listed_count": current_listed_count, # 🆕 寫入上榜次數
+                        "is_niche_stable": is_niche_stable, 
+                        "listed_count": current_listed_count, 
                         "latest_price": latest_price,
                         "avg_vol_20d_sheets": round(avg_vol_20d / 1000, 0),
-                        "dividend_yield_pct": strict_dividend_yield, # 👈 換成嚴格重算的變數
-                        "dividend_amount": annual_dividend,          # 👈 換成年累計變數
+                        "dividend_yield_pct": strict_dividend_yield, 
+                        "dividend_amount": annual_dividend,          
                         "beta": beta,
                         "avg_fill_dividend_days": median_fill_days,
-                        "failed_fill_count": failed_fill_count,
+                        "failed_fill_count": fault_count_90d, # ✅ 修正：統一接住 fault_count_90d 的值
                         "is_dividend_spike": is_dividend_spike,
                         "last_year_eps": eps_data[-1] if eps_data else None,
                         "recent_news_alert": has_news,
@@ -572,14 +613,15 @@ def main():
                         "is_0050": code in TW_50_LIST,
                         "is_financial_holding": is_financial_holding,
                         "is_super_yield": is_super_yield,
-                        "is_fast_fill": median_fill_days <= 30 and failed_fill_count == 0,
+                        "is_fast_fill": is_fast_fill,        
+                        "is_outlier_warning": is_outlier_warning, 
                         "is_long_dividend": is_long_dividend,
                         "has_volatility_warning": has_volatility or is_dividend_spike,
                         "pure_eps_ratio_avg": pure_eps_ratio_avg, 
                         "capital_event": capital_event,       
                         "major_news_event": major_news_event, 
-                        "gift_name": "",  # 第三階段再處理         
-                        "gift_last_buy_date": "" # 第三階段再處理
+                        "gift_name": "",         
+                        "gift_last_buy_date": "" 
                     }
                     
                     # 🆕 嚴格均線淘汰邏輯
