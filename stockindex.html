@@ -84,56 +84,30 @@
     </div>
 
     <div id="glossaryModal" class="modal-overlay">
-        <div class="modal-content" style="max-height: 80vh; overflow-y: auto;">
-            <button id="closeModalBtn" class="close-btn" aria-label="關閉視窗">&times;</button>
-            <h2>💡 股市名詞與圖示說明</h2>
+    <div class="modal-content" style="max-height: 80vh; overflow-y: auto;">
+        <button id="closeModalBtn" class="close-btn" aria-label="關閉視窗">&times;</button>
+        <h2>💡 股市名詞與圖示說明</h2>
 
-            <h3 style="color: var(--primary-color); border-bottom: 2px solid var(--border-color); padding-bottom: 5px;">
-                [ 專有名詞 ]</h3>
-            <ul class="glossary-list">
-                <li style="margin-bottom: 15px;">
-                    <strong style="display: block; color: var(--primary-color);">EPS (每股盈餘)</strong>
-                    公司幫你賺了多少錢。數字越高代表公司越會賺錢，是發放股利的底氣。
-                </li>
-                <li style="margin-bottom: 15px;">
-                    <strong style="display: block; color: var(--primary-color);">Beta 值 (大盤連動率)</strong>
-                    股票的脾氣。低於 0.8 代表抗跌穩健（適合存股）；大於 1.2 代表波動劇烈（適合價差）。
-                </li>
-                <li style="margin-bottom: 15px;">
-                    <strong style="display: block; color: var(--primary-color);">殖利率</strong>
-                    投資的利息回報率（預估股利 ÷ 股價）。這就像是銀行的定存利率。
-                </li>
-                <li style="margin-bottom: 15px;">
-                    <strong style="display: block; color: var(--primary-color);">填息天數</strong>
-                    除息後股價漲回原價的速度。天數越短，你能越快真正賺到這筆股利。
-                </li>
-            </ul>
+        <h3 style="color: var(--primary-color); border-bottom: 2px solid var(--border-color); padding-bottom: 5px;">🎯 基礎分類與勳章</h3>
+        <ul style="list-style-type: none; padding-left: 0;">
+            <li style="margin-bottom: 10px;"><strong>🏆 權值資優生：</strong>台灣 0050 成分股，龍頭企業。</li>
+            <li style="margin-bottom: 10px;"><strong>🏦 金控大本營：</strong>政府特許金控，獲利穩定的金融股。</li>
+            <li style="margin-bottom: 10px;"><strong>🔥 高息人氣王：</strong>最新殖利率表現優異。</li>
+            <li style="margin-bottom: 10px;"><strong>🧊 冷門穩健股：</strong>近 20 日成交量介於 300 至 500 張之間。</li>
+            <li style="margin-bottom: 10px;"><strong>🎁 股東紀念品：</strong>有發放實體生活用品，非商品卡。</li>
+        </ul>
 
-            <h3
-                style="color: var(--primary-color); border-bottom: 2px solid var(--border-color); padding-bottom: 5px; margin-top: 25px;">
-                [ 勳章圖示說明 ]</h3>
-            <ul class="glossary-list">
-                <li style="margin-bottom: 10px;"><strong>🏆 權值資優生：</strong>台灣 0050 成分股，龍頭企業。</li>
-                <li style="margin-bottom: 10px;"><strong>🏦 金控大本營：</strong>政府特許金控，獲利穩定的金融股。</li>
-                <li style="margin-bottom: 10px;"><strong>🔥 高息人氣王：</strong>最新殖利率表現優異。</li>
-                <li style="margin-bottom: 10px;"><strong>⚡ 閃電填息：</strong>平均在 30 天內填息完畢。</li>
-                <li style="margin-bottom: 10px;"><strong>🏅 配息長跑王：</strong>連續多年發放股利不中斷。</li>
-                <li style="margin-bottom: 10px;"><strong>🎁 股東紀念品：</strong>有發放實體生活用品，非商品卡。</li>
-                <li style="margin-bottom: 10px;"><strong>⚠️ 波動警示：</strong>歷年股息不穩定，需注意風險。</li>
-                <li>
-                    <strong>💎 真金白銀模範生</strong>
-                    近五年「盈餘純度」平均極高。代表公司發放的股利是真的靠獲利賺來的，而非動用公積或借錢配息。
-                </li>
-                <li>
-                    <strong>🚨 企業重大變動</strong>
-                    偵測到近期有「股本大幅變動 (±5%)」或「合併、私募、增減資」等新聞事件，購入前建議先查閱相關公告。
-                </li>
-                <li style="margin-bottom: 10px;">
-                    <strong>🧊 冷門穩健：</strong>近 20 日成交量介於 300 至 500 張之間。雖然市場關注度較低，但財務指標合格，建議分批布局以降低流動性風險。
-                </li>
-            </ul>
-        </div>
+        <h3 style="color: var(--primary-color); border-bottom: 2px solid var(--border-color); padding-bottom: 5px; margin-top: 25px;">🛡️ 體檢指標與警示</h3>
+        <ul style="list-style-type: none; padding-left: 0;">
+            <li style="margin-bottom: 10px;"><strong>⚡ 閃電填息：</strong>近三年平均在 30 天內填息完畢，無未填息紀錄。</li>
+            <li style="margin-bottom: 10px;"><strong>🏅 配息長跑：</strong>連續多年發放股利不中斷。</li>
+            <li style="margin-bottom: 10px;"><strong>💎 真金白銀：</strong>近五年「盈餘純度」平均極高。</li>
+            <li style="margin-bottom: 10px;"><strong>⚠️ 波動警示：</strong>歷年股息不穩定，需注意風險。</li>
+            <li style="margin-bottom: 10px;"><strong>🚨 重大變動：</strong>偵測到近期有股本變動或重大新聞，購入前請詳閱公告。</li>
+            <li style="margin-bottom: 10px;"><strong>🌤️ 偶發長貼息：</strong>近三年曾單次超過 90 天未填息，但長期填息體質優良。</li>
+        </ul>
     </div>
+</div>
     <footer
         style="margin-top: 40px; padding: 20px 15px; text-align: center; border-top: 1px solid var(--border-color);">
         <p style="font-size: 0.8rem; color: #888; line-height: 1.6;">
