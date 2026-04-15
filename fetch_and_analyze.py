@@ -250,7 +250,7 @@ def get_dividend_stats(ticker_obj, symbol, latest_price):
         return [], None, 0, False, False, False, False, 0, False, 0
 
 def get_recent_news(symbol, name):
-    """取得過去 7 天內的 Google 財經新聞，並偵測重大風險事件"""
+    """取得過去 7 天內的財經新聞，並偵測重大風險事件"""
     try:
         # 🆕 任務一：精準打擊！利用 site: 指令限定只抓取 Yahoo 股市與三大權威財經網
         search_query = f"{symbol} {name} (site:tw.stock.yahoo.com OR site:cnyes.com OR site:money.udn.com)"
