@@ -270,14 +270,14 @@ def get_dividend_stats(ticker_obj, symbol, latest_price):
                     is_fast_fill = False # 尚未填息就不算 fast fill
 
         # 單次容錯判定：剛好 1 次失誤，且 5 年中位數極為優秀(<=15)
-        is_outlier_warning = (fault_count_90d == 1) and (median_fill_days <= 15)
+        is_outlier_warning = bool((fault_count_90d == 1) and (median_fill_days <= 15))
         
         if not has_current_year and len(history) > 0:
             history.append({"ex_dividend_date": f"{current_year}-XX-XX", "amount": float(history[-1]['amount']), "is_estimated": True})
             is_estimated = True
             
         # 👇 回傳值擴充，加上 is_outlier_warning 與 is_fast_fill
-        return history, round(median_fill_days, 1), round(dividend_yield, 2), is_estimated, is_long_dividend_10y, is_long_dividend_15y, has_volatility, fault_count_90d, is_dividend_spike, total_div_1y, is_outlier_warning, is_fast_fill
+        return history, round(float(median_fill_days), 1), round(dividend_yield, 2), is_estimated, is_long_dividend_10y, is_long_dividend_15y, has_volatility, fault_count_90d, is_dividend_spike, total_div_1y, is_outlier_warning, is_fast_fill
     except Exception:
         return [], None, 0, False, False, False, False, 0, False, 0, False, False
 
@@ -621,7 +621,8 @@ def main():
                         "capital_event": capital_event,       
                         "major_news_event": major_news_event, 
                         "gift_name": "",         
-                        "gift_last_buy_date": "" 
+                        "gift_last_buy_date": "" ,
+                        "is_evergreen": bool(is_evergreen)  # 👑 記得補上這行，前端才抓得到皇冠資料！
                     }
                     
                     # 🆕 嚴格均線淘汰邏輯
