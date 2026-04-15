@@ -21,7 +21,7 @@
 
                 <div class="top-actions">
                     <button id="glossaryBtn" class="action-btn">💡 名詞解釋</button>
-                    <button id="droppedTabBtn" class="action-btn" data-target="dropped_stocks"
+                    <button id="droppedTabBtn" class="action-btn" data-target="recent_dropped_stocks"
                         style="background: #FFF5F5; color: #C53030; border: 1px solid #FEB2B2;">⚠️ 跌出榜單</button>
                 </div>
             </div>
@@ -84,30 +84,33 @@
     </div>
 
     <div id="glossaryModal" class="modal-overlay">
-    <div class="modal-content" style="max-height: 80vh; overflow-y: auto;">
-        <button id="closeModalBtn" class="close-btn" aria-label="關閉視窗">&times;</button>
-        <h2>💡 股市名詞與圖示說明</h2>
+        <div class="modal-content" style="max-height: 80vh; overflow-y: auto;">
+            <button id="closeModalBtn" class="close-btn" aria-label="關閉視窗">&times;</button>
+            <h2>💡 股市名詞與圖示說明</h2>
 
-        <h3 style="color: var(--primary-color); border-bottom: 2px solid var(--border-color); padding-bottom: 5px;">🎯 基礎分類與勳章</h3>
-        <ul style="list-style-type: none; padding-left: 0;">
-            <li style="margin-bottom: 10px;"><strong>🏆 權值資優生：</strong>台灣 0050 成分股，龍頭企業。</li>
-            <li style="margin-bottom: 10px;"><strong>🏦 金控大本營：</strong>政府特許金控，獲利穩定的金融股。</li>
-            <li style="margin-bottom: 10px;"><strong>🔥 高息人氣王：</strong>最新殖利率表現優異。</li>
-            <li style="margin-bottom: 10px;"><strong>🧊 冷門穩健股：</strong>近 20 日成交量介於 300 至 500 張之間。</li>
-            <li style="margin-bottom: 10px;"><strong>🎁 股東紀念品：</strong>有發放實體生活用品，非商品卡。</li>
-        </ul>
+            <h3 style="color: var(--primary-color); border-bottom: 2px solid var(--border-color); padding-bottom: 5px;">
+                🎯 基礎分類與勳章</h3>
+            <ul style="list-style-type: none; padding-left: 0;">
+                <li style="margin-bottom: 10px;"><strong>🏆 權值資優生：</strong>台灣 0050 成分股，龍頭企業。</li>
+                <li style="margin-bottom: 10px;"><strong>🏦 金控大本營：</strong>政府特許金控，獲利穩定的金融股。</li>
+                <li style="margin-bottom: 10px;"><strong>🔥 高息人氣王：</strong>最新殖利率表現優異。</li>
+                <li style="margin-bottom: 10px;"><strong>🧊 冷門穩健股：</strong>近 20 日成交量介於 300 至 500 張之間。</li>
+                <li style="margin-bottom: 10px;"><strong>🎁 股東紀念品：</strong>有發放實體生活用品，非商品卡。</li>
+            </ul>
 
-        <h3 style="color: var(--primary-color); border-bottom: 2px solid var(--border-color); padding-bottom: 5px; margin-top: 25px;">🛡️ 體檢指標與警示</h3>
-        <ul style="list-style-type: none; padding-left: 0;">
-            <li style="margin-bottom: 10px;"><strong>⚡ 閃電填息：</strong>近三年平均在 30 天內填息完畢，無未填息紀錄。</li>
-            <li style="margin-bottom: 10px;"><strong>🏅 配息長跑：</strong>連續多年發放股利不中斷。</li>
-            <li style="margin-bottom: 10px;"><strong>💎 真金白銀：</strong>近五年「盈餘純度」平均極高。</li>
-            <li style="margin-bottom: 10px;"><strong>⚠️ 波動警示：</strong>歷年股息不穩定，需注意風險。</li>
-            <li style="margin-bottom: 10px;"><strong>🚨 重大變動：</strong>偵測到近期有股本變動或重大新聞，購入前請詳閱公告。</li>
-            <li style="margin-bottom: 10px;"><strong>🌤️ 偶發長貼息：</strong>近三年曾單次超過 90 天未填息，但長期填息體質優良。</li>
-        </ul>
+            <h3
+                style="color: var(--primary-color); border-bottom: 2px solid var(--border-color); padding-bottom: 5px; margin-top: 25px;">
+                🛡️ 體檢指標與警示</h3>
+            <ul style="list-style-type: none; padding-left: 0;">
+                <li style="margin-bottom: 10px;"><strong>⚡ 閃電填息：</strong>近三年平均在 30 天內填息完畢，無未填息紀錄。</li>
+                <li style="margin-bottom: 10px;"><strong>🏅 配息長跑：</strong>連續多年發放股利不中斷。</li>
+                <li style="margin-bottom: 10px;"><strong>💎 真金白銀：</strong>近五年「盈餘純度」平均極高。</li>
+                <li style="margin-bottom: 10px;"><strong>⚠️ 波動警示：</strong>歷年股息不穩定，需注意風險。</li>
+                <li style="margin-bottom: 10px;"><strong>🚨 重大變動：</strong>偵測到近期有股本變動或重大新聞，購入前請詳閱公告。</li>
+                <li style="margin-bottom: 10px;"><strong>🌤️ 偶發長貼息：</strong>近三年曾單次超過 90 天未填息，但長期填息體質優良。</li>
+            </ul>
+        </div>
     </div>
-</div>
     <footer
         style="margin-top: 40px; padding: 20px 15px; text-align: center; border-top: 1px solid var(--border-color);">
         <p style="font-size: 0.8rem; color: #888; line-height: 1.6;">
