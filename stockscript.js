@@ -120,9 +120,9 @@ const renderTable = () => {
         const shares = sharesInput ? (parseFloat(sharesInput.value) || 1000) : 1000;
         let expectedTotal = stock.dividend_amount !== undefined ? (stock.dividend_amount * shares).toLocaleString() : '---';
 
-        // 🆕 任務三：皇冠圖示與 Google Finance 走勢圖連結
+        // 🆕 任務三：皇冠圖示與走勢圖連結 (統一導向 Yahoo 股市)
         const evergreenCrown = stock.is_evergreen ? '<span title="👑 年度長青樹" style="cursor:help; margin-right: 6px;">👑</span>' : '';
-        const financeUrl = `https://www.google.com/finance/quote/${stock.symbol}:TPE`;
+        const financeUrl = `https://tw.stock.yahoo.com/quote/${stock.symbol}`;
 
         return `
             <tr data-symbol="${stock.symbol}">
