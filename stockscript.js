@@ -32,8 +32,17 @@ const renderTable = () => {
 
     const excludeKeywords = ["超商", "7-11", "全家", "萊爾富", "OK", "商品卡", "禮物卡", "抵用券"];
 
-    // 🚀 新增 2：執行過濾 (紀念品 + 股價上限)
+    // 🆕 建立一個 Set 用來記錄已經出現過的股票代號
+    let seenSymbols = new Set(); 
+
+    // 🚀 新增 2：執行過濾 (防重複 + 紀念品 + 股價上限)
     let filteredStocks = rawStocks.filter(stock => {
+        // 🆕 防重複過濾機制
+        if (seenSymbols.has(stock.symbol)) {
+            return false; // 如果這檔股票已經在畫面上，就過濾掉
+        }
+        seenSymbols.add(stock.symbol);
+
         let giftName = (stock.gift_name || "").replace(/參考圖/g, "").trim();
         const isConvenienceStore = excludeKeywords.some(kw => giftName.includes(kw));
 
