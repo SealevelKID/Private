@@ -399,17 +399,24 @@ def main():
                 # 讀取舊名單 (相容舊版 dropped_stocks 或新版 recent_dropped_stocks)
                 dropped_list = saved_data.get("recent_dropped_stocks", saved_data.get("dropped_stocks", [])) 
                 recent_dropped = []
+                seen_dropped_symbols = set() # 🆕 加入 Set 用於追蹤已加入的股票代號，防止載入時重複
                 
                 for s in dropped_list:
+                    sym = s.get("symbol")
+                    if sym in seen_dropped_symbols:
+                        continue # 如果已經處理過這檔，直接跳過
+
                     drop_date_str = s.get("drop_date", "")
                     if drop_date_str:
                         drop_date = datetime.strptime(drop_date_str, "%Y-%m-%d")
                         if (now - drop_date).days <= 30: # 僅保留 30 天內的
                             recent_dropped.append(s)
+                            seen_dropped_symbols.add(sym)
                     else:
                         # 若無日期 (剛升級)，補上今日並保留
                         s["drop_date"] = now.strftime("%Y-%m-%d")
                         recent_dropped.append(s)
+                        seen_dropped_symbols.add(sym)
                 
                 # 將清理後的名單寫回準備輸出的 results 字典中
                 results["recent_dropped_stocks"] = recent_dropped
@@ -688,8 +695,13 @@ def main():
                     dropped_info["listed_count"] = 0 # 重置穩定度
                     # 👇 1. 補上今天的淘汰日期，讓 30 天保留機制能計算
                     dropped_info["drop_date"] = datetime.now().strftime("%Y-%m-%d") 
-                    # 👇 2. 修改為正確的新名稱 recent_dropped_stocks
-                    results["recent_dropped_stocks"].append(dropped_info)
+                    
+                    # 🆕 2. 檢查是否已經在清單內，避免重複加入
+                    existing_index = next((i for i, s in enumerate(results["recent_dropped_stocks"]) if s["symbol"] == code), -1)
+                    if existing_index >= 0:
+                        results["recent_dropped_stocks"][existing_index] = dropped_info # 已存在則更新最新狀態
+                    else:
+                        results["recent_dropped_stocks"].append(dropped_info)
 
                 results["rejected_stocks"].append({
                     "symbol": code,
