@@ -78,6 +78,44 @@ def get_all_tw_stocks():
                 print(f"❌ 嚴重錯誤：獲取清單連續失敗 {max_retries} 次，程式終止。")
                 sys.exit(1)
 
+def get_warning_disposal_stocks():
+    """🆕 抓取證交所今日的 注意股 與 處置股"""
+    print("🔍 正在獲取最新的「注意股」與「處置股」名單...")
+    warning_list = set()
+    disposal_list = {}
+    
+    headers = {"User-Agent": random.choice(USER_AGENTS)}
+    
+    # 1. 抓取注意股 (Notice)
+    try:
+        url_notice = "https://openapi.twse.com.tw/v1/announcement/notice"
+        res = requests.get(url_notice, headers=headers, timeout=10, verify=False)
+        if res.status_code == 200:
+            for item in res.json():
+                # 防呆遍歷：找尋4位數的股票代號
+                for val in item.values():
+                    val_str = str(val).strip()
+                    if len(val_str) == 4 and val_str.isdigit():
+                        warning_list.add(val_str)
+    except Exception as e:
+        print(f"  ⚠️ 注意股 API 抓取失敗: {e}")
+
+    # 2. 抓取處置股 (Punish)
+    try:
+        url_punish = "https://openapi.twse.com.tw/v1/announcement/punish"
+        res = requests.get(url_punish, headers=headers, timeout=10, verify=False)
+        if res.status_code == 200:
+            for item in res.json():
+                for val in item.values():
+                    val_str = str(val).strip()
+                    if len(val_str) == 4 and val_str.isdigit():
+                        disposal_list[val_str] = "處置中"
+    except Exception as e:
+        print(f"  ⚠️ 處置股 API 抓取失敗: {e}")
+
+    print(f"✅ 成功抓取！今日共有 {len(warning_list)} 檔注意股，{len(disposal_list)} 檔處置股。")
+    return warning_list, disposal_list
+
 def check_listing_years(ticker_obj, target_years=10):
     try:
         hist = ticker_obj.history(period="max")
@@ -338,13 +376,42 @@ def get_recent_news(symbol, name):
         return False, "", False
     
 def save_progress(filename, data):
-    # 🆕 寫入最後更新日期
+    # ==========================================
+    # 🛡️ 升級：防呆檢查 (Assertion)
+    # ==========================================
+    total_passed = len(data.get("defensive_stocks", [])) + len(data.get("growth_stocks", [])) + len(data.get("financial_stocks", []))
+    processed_count = len(data.get("processed_symbols", []))
+    
+    # 防護邏輯：如果系統已經處理了超過 50 檔股票，但「合格清單」卻是 0 檔
+    # 這極度不合理（代表 API 可能被擋或壞了），此時強制攔截，拒絕覆寫舊檔案！
+    if total_passed == 0 and processed_count > 50:
+        print(f"\n🚨 [防呆攔截] 系統已掃描 {processed_count} 檔，但合格數為 0！")
+        print("為保護您的舊資料不被空白覆蓋，本次操作拒絕存檔。")
+        return # 直接退出函數，不執行下方的覆寫動作
+
+    # 原本的存檔邏輯保持不變
     data["last_update"] = datetime.now().strftime("%Y-%m-%d")
     with open(filename, 'w', encoding='utf-8') as f:
         json.dump(data, f, ensure_ascii=False, indent=4)
         
     with open('rejected_stocks.json', 'w', encoding='utf-8') as f:
         json.dump(data.get("rejected_stocks", []), f, ensure_ascii=False, indent=4)
+def send_telegram_notification(message):
+    # 🚨 請將下方兩行引號內的文字，替換成你剛剛拿到的 Token 與 ID
+    TOKEN = "在這裡貼上你的_BOT_TOKEN" 
+    CHAT_ID = "在這裡貼上你的_CHAT_ID"
+    
+    url = f"https://api.telegram.org/bot{TOKEN}/sendMessage"
+    payload = {
+        "chat_id": CHAT_ID,
+        "text": message,
+        "parse_mode": "HTML" # 支援簡單的粗體格式
+    }
+    try:
+        # 使用 requests 發送，設定 10 秒 timeout 避免卡死
+        requests.post(url, data=payload, timeout=10, verify=False)
+    except Exception as e:
+        print(f"⚠️ Telegram 通知發送失敗: {e}")
 
 def main():
     import time # 確保有載入 time
@@ -357,6 +424,9 @@ def main():
     print("啟動財務數據工程師腳本 (全台股嚴選資優生版 + 淘汰追蹤)...")
     schedule = get_all_tw_stocks()
     
+    # 🆕 呼叫新函數，把警示黑名單先抓下來存放在記憶體
+    notice_set, disposal_dict = get_warning_disposal_stocks()
+    
     # 🆕 若啟用 --test，覆寫 schedule 只保留 0050 名單
     if args.test:
         print("\n🧪 [測試模式] 已啟動！僅掃描 0050 內成分股...")
@@ -364,13 +434,14 @@ def main():
 
     output_filename = "stock_data.json" 
     
-    # 🆕 擴充 JSON 結構
+    # 🆕 擴充 JSON 結構 (加上 warning_stocks)
     results = {
         "defensive_stocks": [], 
         "growth_stocks": [], 
         "financial_stocks": [], 
         "souvenir_stocks": [],  
-        "recent_dropped_stocks": [], # 🆕 正名：近期移出名單
+        "warning_stocks": [],        # 🆕 新增：被處置/注意但體質良好的警示股
+        "recent_dropped_stocks": [], 
         "processed_symbols": [],
         "rejected_stocks": [],
         "last_update": ""
@@ -563,43 +634,47 @@ def main():
                     current_listed_count = history_listed_counts.get(code, 0) + 1
 
                     # ==========================================
-                    # 🆕 任務二：半年歸零與長青樹判定
+                    # 🆕 任務二：半年歸零與長青樹判定 (完美修正版)
                     # ==========================================
                     now_date = datetime.now()
                     prev_data = previous_good_stocks.get(code, {})
                     last_hit_str = prev_data.get("last_hit_date", "")
                     history_hits = prev_data.get("history_hits", [])
 
-                    # 🆕 專屬五月上線的自動洗白機制
-                    # 將所有 "2026-05" 以前的測試月份強制刪除
-                    original_len = len(history_hits)
-                    history_hits = [m for m in history_hits if m >= "2026-05"]
-                    
-                    current_listed_count = history_listed_counts.get(code, 0)
-                    
-                    # 如果過濾後紀錄空了，但原本有資料，代表之前都是四月的測試數據，次數歸零！
-                    if len(history_hits) == 0 and original_len > 0:
-                        current_listed_count = 0
-                        last_hit_str = "" # 同時清空最後達標日，當作全新的一張白紙
-
-                    # 180 天歸零判定
+                    # 1. 180 天歸零判定 (半年未進榜，紀錄全清)
                     if last_hit_str:
                         last_hit = datetime.strptime(last_hit_str, "%Y-%m-%d")
                         if (now_date - last_hit).days > 180:
-                            current_listed_count = 0 # 🚨 超過半年沒進榜，穩定度歸零重算
                             history_hits = []
 
-                    current_listed_count += 1
+                    # 2. 專屬五月上線的自動洗白機制 (強力剔除 2026-05 以前的紀錄)
+                    history_hits = [m for m in history_hits if m >= "2026-05"]
+
+                    # 3. 本月達標判定 (每週跑腳本，但每月只會加 1 次)
                     current_month_str = now_date.strftime("%Y-%m")
                     if current_month_str not in history_hits:
-                        history_hits.append(current_month_str) # 紀錄本次達標月份
+                        history_hits.append(current_month_str)
+                        
+                    # 保留近兩年紀錄避免 JSON 檔案過大
                     if len(history_hits) > 24: 
-                        history_hits.pop(0) # 僅保留近兩年紀錄避免檔案過大
+                        history_hits.pop(0) 
+
+                    # 4. 重新計算正確的上榜次數 (直接算陣列長度，徹底消滅舊版灌水數字！)
+                    current_listed_count = len(history_hits)
 
                     # 皇冠判定：累計 >= 12 個月 且 近 12 個月內有 10 個月在榜
                     recent_12_months = [(now_date.replace(day=1) - timedelta(days=i*30)).strftime("%Y-%m") for i in range(12)]
                     hits_in_last_12 = sum(1 for m in recent_12_months if m in history_hits)
                     is_evergreen = (current_listed_count >= 12) and (hits_in_last_12 >= 10)
+
+                    # ==========================================
+                    # 🆕 任務三：判定是否為飆股/警示股
+                    # ==========================================
+                    warning_status = ""
+                    if code in disposal_dict:
+                        warning_status = disposal_dict[code] # "處置中"
+                    elif code in notice_set:
+                        warning_status = "注意股"
 
                     stock_info = {
                         "symbol": code,
@@ -629,7 +704,10 @@ def main():
                         "major_news_event": major_news_event, 
                         "gift_name": "",         
                         "gift_last_buy_date": "" ,
-                        "is_evergreen": bool(is_evergreen)  # 👑 記得補上這行，前端才抓得到皇冠資料！
+                        "is_evergreen": bool(is_evergreen),  # 👑 記得這行後面要加逗號！
+                        "history_hits": history_hits,                  # 🛠️ 修正 3：必須把紀錄存入 JSON！
+                        "last_hit_date": now_date.strftime("%Y-%m-%d"), # 🛠️ 修正 3：必須把日期存入 JSON！
+                        "warning_status": warning_status  # 🆕 記得在這裡補上這行，把狀態存進去！
                     }
                     
                     # 🆕 嚴格均線淘汰邏輯
@@ -643,19 +721,52 @@ def main():
                             
                     is_eps_growing = len(eps_data) >= 4 and (eps_data[-1] is not None) and (eps_data[-4] is not None) and (eps_data[-1] > eps_data[-4])
                     
+                    # ==========================================
+                    # 🚀 分類與攔截網：合格的好股票，若被警示則獨立存放
+                    # ==========================================
+                    added_to_warning = False # 用來防止同一檔股票被重複塞入警示清單
+                    
+                    # 1. 防禦型判定
+                    if beta < 0.8 and dividend_yield > 4.0:
+                        # 防禦型：股價不可嚴重跌破年線 (容許 5% 誤差)
+                        if ma_240 and latest_price < (ma_240 * 0.95):
+                            reject_reason = "長線趨勢走弱 (股價跌破年線)"
+                        else:
+                            classified = True
+                            if warning_status:
+                                results["warning_stocks"].append(stock_info)
+                                added_to_warning = True
+                            else:
+                                results["defensive_stocks"].append(stock_info)
+                            
+                    # 2. 成長型判定
+                    is_eps_growing = len(eps_data) >= 4 and (eps_data[-1] is not None) and (eps_data[-4] is not None) and (eps_data[-1] > eps_data[-4])
+                    
                     if 0.8 <= beta <= 1.5 and is_eps_growing:
                         # 成長型：均線需多頭排列 (價格 > 半年線 > 年線)
                         if ma_120 and ma_240 and not (latest_price > ma_120 > ma_240):
                             if not classified: # 避免覆寫已被分類為抗跌的狀態
                                 reject_reason = "趨勢未達成長股動能標準 (均線未呈多頭排列)"
                         else:
-                            results["growth_stocks"].append(stock_info)
                             classified = True
+                            if warning_status:
+                                if not added_to_warning:
+                                    results["warning_stocks"].append(stock_info)
+                                    added_to_warning = True
+                            else:
+                                results["growth_stocks"].append(stock_info)
                     
+                    # 3. 金融股判定
                     if is_financial_holding:
-                        results["financial_stocks"].append(stock_info)
                         classified = True
+                        if warning_status:
+                            if not added_to_warning:
+                                results["warning_stocks"].append(stock_info)
+                                added_to_warning = True
+                        else:
+                            results["financial_stocks"].append(stock_info)
 
+                    # 4. 未分類處理
                     if not classified:
                         if not reject_reason:
                             reject_reason = "處於模糊地帶：未符合四大名單的入選資格"
@@ -748,6 +859,18 @@ def main():
     print(f"❌ 因未達標而淘汰總數：{total_rejected} 檔")
     print(f"💾 資料已匯出至 {output_filename} 以及 rejected_stocks.json")
     print("="*50)
+
+    # ==========================================
+    # 🆕 新增：執行完畢發送 Telegram 通知
+    # ==========================================
+    report_msg = (
+        f"📊 <b>[股市掃描執行完畢]</b>\n"
+        f"⏱️ 總耗時：{mins} 分 {secs} 秒\n"
+        f"✅ 成功收錄資優生：{total_passed} 檔\n"
+        f"❌ 淘汰總數：{total_rejected} 檔\n"
+        f"💾 檔案皆已安全存檔！"
+    )
+    send_telegram_notification(report_msg)
 
 if __name__ == "__main__":
     main()
