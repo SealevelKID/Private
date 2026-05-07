@@ -21,8 +21,7 @@
 
                 <div class="top-actions">
                     <button id="glossaryBtn" class="action-btn">💡 名詞解釋</button>
-                    <button id="droppedTabBtn" class="action-btn" data-target="recent_dropped_stocks"
-                        style="background: #FFF5F5; color: #C53030; border: 1px solid #FEB2B2;">⚠️ 跌出榜單</button>
+                    <button id="droppedTabBtn" class="action-btn" data-target="recent_dropped_stocks" style="background: #FFF5F5; color: #C53030; border: 1px solid #FEB2B2;">⚠️ 跌出榜單</button>
                 </div>
             </div>
 
@@ -59,8 +58,16 @@
             <button class="tab-btn active" data-target="defensive_stocks">🛡️ 抗跌存股</button>
             <button class="tab-btn" data-target="growth_stocks">🚀 穩健成長</button>
             <button class="tab-btn" data-target="financial_stocks">🏦 金融專區</button>
+            <button class="tab-btn" data-target="warning_stocks">🔥 警示優股</button>
             <button class="tab-btn" data-target="souvenir_stocks">🎁 股東福利</button>
-            <button class="tab-btn" data-target="expired_souvenir_stocks" id="expiredTab">🕰️ 明年請早</button>
+        </div>
+        <div id="souvenirSubMenu" style="display: none; justify-content: center; gap: 12px; margin-top: 10px; margin-bottom: 20px;">
+            <button class="sub-tab-btn active" data-target="souvenir_stocks" style="padding: 6px 16px; font-size: 0.9rem; border-radius: 20px; border: 2px solid #fbbf24; background-color: #fef3c7; color: #b45309; font-weight: bold; cursor: pointer; transition: all 0.2s;">
+                🟢 尚可購入
+            </button>
+            <button class="sub-tab-btn" data-target="expired_souvenir_stocks" style="padding: 6px 16px; font-size: 0.9rem; border-radius: 20px; border: 1px solid #e5e7eb; background-color: #ffffff; color: #6b7280; font-weight: bold; cursor: pointer; transition: all 0.2s;">
+                🔴 明年請早
+            </button>
         </div>
         <div class="omni-search-section" style="margin-bottom: 25px; padding: 0 15px;">
             <input type="text" id="omniSearchInput" class="search-box"
