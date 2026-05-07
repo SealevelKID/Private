@@ -62,3 +62,9 @@ jobs:
 
       - name: 發布部署
         uses: actions/deploy-pages@v5
+
+      - name: 發送 Telegram 通知
+        run: |
+          curl -s -X POST https://api.telegram.org/bot${{ env.TELEGRAM_BOT_TOKEN }}/sendMessage \
+          -d chat_id=${{ env.TELEGRAM_CHAT_ID }} \
+          -d text="✅ 股票資料已完成自動抓取與更新！"
