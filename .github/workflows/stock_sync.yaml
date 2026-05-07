@@ -12,8 +12,10 @@ permissions:
 
 # 設定全域環境變數，解決 2026 年的 Node.js 棄用警告與時區同步
 env:
-  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
-  TZ: Asia/Taipei  # 🆕 新增：強制指定虛擬主機為台灣時區
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+      TZ: Asia/Taipei  # 強制指定虛擬主機為台灣時區
+      TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+      TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
 
 jobs:
   update-stock:
@@ -37,7 +39,9 @@ jobs:
           pip install -r requirements.txt
 
       - name: 執行資料抓取與分析
-        run: python fetch_and_analyze.py
+        run: |
+          python fetch_and_analyze.py
+          python gift_fetcher.py
 
       - name: 自動提交更新資料
         run: |
