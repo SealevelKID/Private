@@ -131,6 +131,22 @@ const renderTable = () => {
                     </div>
                 </div>`;
         }
+        // 🆕 任務五：警示股 UI 區塊 (注意/處置標籤)
+        let warningTag = '';
+        if (stock.warning_status) {
+            const isDisposal = stock.warning_status.includes("處置");
+            // 處置用深橘色，注意用黃色
+            const bgColor = isDisposal ? '#fffaf3' : '#fffdf2';
+            const borderColor = isDisposal ? '#fbd38d' : '#fef3c7';
+            const textColor = isDisposal ? '#c05621' : '#b45309';
+
+            warningTag = `
+                <div style="margin-top: 8px;">
+                    <div style="font-size: 0.9rem; padding: 6px 12px; border-radius: 6px; border: 1px solid ${borderColor}; background-color: ${bgColor}; color: ${textColor}; display: inline-block;">
+                        <strong>⚠️ 市場警示：</strong>${stock.warning_status}
+                    </div>
+                </div>`;
+        }
 
         // 🚀 防呆機制：如果沒有抓到金額，顯示 ---
         let displayAmount = stock.dividend_amount !== undefined ? stock.dividend_amount : '---';
@@ -145,12 +161,13 @@ const renderTable = () => {
         const evergreenCrown = stock.is_evergreen ? '<span title="👑 年度長青樹" style="cursor:help; margin-right: 6px;">👑</span>' : '';
         const financeUrl = `https://tw.stock.yahoo.com/quote/${stock.symbol}`;
 
+        // 🚀 修正：恢復三欄式結構 (名稱 | 按鈕 | 領取金額)
         return `
             <tr data-symbol="${stock.symbol}">
                 <td>
                     <div style="margin-bottom: 6px; font-size: 1.15rem; display: flex; align-items: center;">
                         ${evergreenCrown}
-                        <a href="${financeUrl}" target="_blank" class="stock-link" title="點擊查看股價走勢">
+                        <a href="${financeUrl}" target="_blank" class="stock-link">
                             ${stock.name} (${stock.symbol})
                         </a>
                         ${medals}
@@ -159,10 +176,12 @@ const renderTable = () => {
                         現價：${latestPrice} 元
                     </div>
                     ${souvenirTag}
-                    ${droppedWarning} </td>
+                    ${warningTag}
+                    ${droppedWarning}
+                </td>
                 <td style="vertical-align: middle; text-align: center;">
-                    <div style="font-size: 0.8rem; color: #718096; margin-bottom: 4px;">近一年累計</div>
-                    <button class="dividend-btn" data-symbol="${stock.symbol}">
+                    <button class="dividend-btn" data-symbol="${stock.symbol}" title="點擊查看詳細體檢資料" 
+                        style="background: #edf2f7; color: #4a5568; border: 1px solid #e2e8f0; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 0.9rem;">
                         約 ${displayAmount} 元
                     </button>
                 </td>
@@ -176,15 +195,51 @@ const renderTable = () => {
     stockTableBody.innerHTML = rows || '<tr><td colspan="3" style="text-align:center;">此類別目前無符合條件的股票</td></tr>';
 };
 
-// 頁籤切換邏輯
+// 🚀 修正版：頁籤切換邏輯 (支援次選單顯示/隱藏)
 document.querySelectorAll('.tab-btn').forEach(btn => {
     btn.addEventListener('click', () => {
+        // 1. 切換主按鈕的 active 狀態
         document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
+
+        // 2. 取得目標類別
+        const target = btn.getAttribute('data-target');
+        currentCategory = target;
+
+        // 3. 🆕 核心魔法：控制次選單顯示
+        const souvenirSubMenu = document.getElementById('souvenirSubMenu');
+        if (target === 'souvenir_stocks' || target === 'expired_souvenir_stocks') {
+            souvenirSubMenu.style.display = 'flex'; // 顯示次選單
+        } else {
+            souvenirSubMenu.style.display = 'none'; // 隱藏次選單
+        }
+
+        renderTable();
+    });
+});
+
+// 🆕 任務六：股東福利次選單切換邏輯
+document.querySelectorAll('.sub-tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+        // 1. 切換次按鈕的 active 樣式 (顏色與粗細)
+        document.querySelectorAll('.sub-tab-btn').forEach(b => {
+            b.classList.remove('active');
+            b.style.border = '1px solid #e5e7eb';
+            b.style.backgroundColor = '#ffffff';
+            b.style.color = '#6b7280';
+        });
+
+        btn.classList.add('active');
+        btn.style.border = '2px solid #fbbf24';
+        btn.style.backgroundColor = '#fef3c7';
+        btn.style.color = '#b45309';
+
+        // 2. 切換資料類別並重新渲染
         currentCategory = btn.getAttribute('data-target');
         renderTable();
     });
 });
+
 // 🆕 頂部「跌出榜單」按鈕切換邏輯
 const droppedTabBtn = document.getElementById('droppedTabBtn');
 if (droppedTabBtn) {
@@ -355,6 +410,7 @@ if (omniSearchInput && omniSearchResults) {
             defensive_stocks: '🛡️ 抗跌存股',
             growth_stocks: '🚀 穩健成長',
             financial_stocks: '🏦 金融專區',
+            warning_stocks: '🔥 警示優質股', // 🆕 新增這一行
             souvenir_stocks: '🎁 股東福利',
             rejected_stocks: '❌ 淘汰名單'
         };
