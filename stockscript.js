@@ -32,6 +32,15 @@ const renderTable = () => {
 
     const excludeKeywords = ["超商", "7-11", "全家", "萊爾富", "OK", "商品卡", "禮物卡", "抵用券"];
 
+    // 🛡️ 強化防呆：確保空字串不會意外轉換失敗，導致過濾掉所有股票
+    let maxPrice = Infinity;
+    if (maxPriceInput && maxPriceInput.value.trim() !== '') {
+        const parsed = parseFloat(maxPriceInput.value);
+        if (!isNaN(parsed)) {
+            maxPrice = parsed;
+        }
+    }
+
     // 🆕 建立一個 Set 用來記錄已經出現過的股票代號
     let seenSymbols = new Set();
 
@@ -61,12 +70,7 @@ const renderTable = () => {
 
     // 🚀 新增 3：執行排序邏輯
     filteredStocks.sort((a, b) => {
-        // 🆕 降級排序邏輯：將「觀察中 (is_returning)」的股票強制排在後面
-        const returnA = a.is_returning ? 1 : 0;
-        const returnB = b.is_returning ? 1 : 0;
-        if (returnA !== returnB) {
-            return returnA - returnB; // 0 (正常) 放前面，1 (觀察中) 墊底
-        }
+        // ✅ 移除強制墊底邏輯，讓敗部復活股能依據真實股價與殖利率排序
         const priceA = parseFloat(a.latest_price) || 0;
         const priceB = parseFloat(b.latest_price) || 0;
         const yieldA = parseFloat(a.dividend_yield_pct) || 0;
