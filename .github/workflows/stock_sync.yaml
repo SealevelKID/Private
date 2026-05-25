@@ -12,10 +12,11 @@ permissions:
 
 # 設定全域環境變數，解決 2026 年的 Node.js 棄用警告與時區同步
 env:
-      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
-      TZ: Asia/Taipei  # 強制指定虛擬主機為台灣時區
-      TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
-      TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  TZ: Asia/Taipei  # 強制指定虛擬主機為台灣時區
+  MOENV_API_KEY: ${{ secrets.MOENV_API_KEY }}
+  TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+  TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
 
 jobs:
   update-stock:
@@ -68,3 +69,10 @@ jobs:
           curl -s -X POST https://api.telegram.org/bot${{ env.TELEGRAM_BOT_TOKEN }}/sendMessage \
           -d chat_id=${{ env.TELEGRAM_CHAT_ID }} \
           -d text="✅ 股票資料已完成自動抓取與更新！"
+
+      - name: 發送 Telegram 失敗通知
+        if: failure()  # 🚨 關鍵：只要前面有任何一個步驟報錯中斷，就會強制觸發這步
+        run: |
+          curl -s -X POST https://api.telegram.org/bot${{ env.TELEGRAM_BOT_TOKEN }}/sendMessage \
+          -d chat_id=${{ env.TELEGRAM_CHAT_ID }} \
+          -d text="🚨 警告：股票資料自動更新失敗，請檢查 GitHub Actions 紀錄！"
