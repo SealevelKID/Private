@@ -33,7 +33,7 @@ const renderTable = () => {
     const excludeKeywords = ["超商", "7-11", "全家", "萊爾富", "OK", "商品卡", "禮物卡", "抵用券"];
 
     // 🆕 建立一個 Set 用來記錄已經出現過的股票代號
-    let seenSymbols = new Set(); 
+    let seenSymbols = new Set();
 
     // 🚀 新增 2：執行過濾 (防重複 + 紀念品 + 股價上限)
     let filteredStocks = rawStocks.filter(stock => {
@@ -61,6 +61,12 @@ const renderTable = () => {
 
     // 🚀 新增 3：執行排序邏輯
     filteredStocks.sort((a, b) => {
+        // 🆕 降級排序邏輯：將「觀察中 (is_returning)」的股票強制排在後面
+        const returnA = a.is_returning ? 1 : 0;
+        const returnB = b.is_returning ? 1 : 0;
+        if (returnA !== returnB) {
+            return returnA - returnB; // 0 (正常) 放前面，1 (觀察中) 墊底
+        }
         const priceA = parseFloat(a.latest_price) || 0;
         const priceB = parseFloat(b.latest_price) || 0;
         const yieldA = parseFloat(a.dividend_yield_pct) || 0;
@@ -91,7 +97,7 @@ const renderTable = () => {
         if (stock.is_long_dividend) medals += '<span title="🏅 配息長跑" style="cursor:help; margin-left: 4px;">🏅</span>';
         if (stock.pure_eps_ratio_avg >= 95.0) medals += '<span title="💎 真金白銀：純度極高" style="cursor:help; margin-left: 4px;">💎</span>';
         if (stock.capital_event || stock.major_news_event) medals += '<span title="🚨 重大變動" style="cursor:help; margin-left: 4px;">🚨</span>';
-        
+
         // 👇 在這裡新增 🌤️ 偶發長貼息 (豁免股) 的勳章
         if (stock.is_outlier_warning) medals += '<span title="🌤️ 偶發長貼息：長期體質優良，僅近三年曾有單次貼息較長" style="cursor:help; margin-left: 4px;">🌤️</span>';
 
@@ -105,69 +111,82 @@ const renderTable = () => {
         🛑 貼息紅線: <strong>${stock.failed_fill_count || 0}</strong> 次
     </div>
 `;
-        
-        }
+            // 🆕 處理敗部復活的視覺效果
+            let trStyle = '';
+            let returningBadge = '';
 
-        // 🎁 紀念品 UI 區塊
-        let souvenirTag = '';
-        if (displayGift !== '') {
-            const isExpired = currentCategory === 'expired_souvenir_stocks';
-            const dateStr = stock.gift_last_buy_date ? `<span style="color: ${isExpired ? '#9ca3af' : '#dc2626'}; margin-left: 8px;">⏳ 最後買進：${stock.gift_last_buy_date}</span>` : '';
+            if (stock.is_returning) {
+                medals += '<span title="🔄 觀察中 (近期曾跌出榜單)" style="cursor:help; margin-left: 4px;">🔄</span>';
+                trStyle = 'background-color: #faf8f0; opacity: 0.9;'; // 淡黃色底與微透明度，做出視覺降級感
+                returningBadge = `
+                <div style="margin-top: 6px;">
+                    <span style="font-size: 0.8rem; padding: 4px 8px; border-radius: 4px; border: 1px solid #d6bcfa; background-color: #faf5ff; color: #6b46c1; font-weight: bold;">
+                        🔄 觀察中 (近期曾跌出榜單，穩定度歸零重算)
+                    </span>
+                </div>`;
 
-            souvenirTag = `
+            }
+
+            // 🎁 紀念品 UI 區塊
+            let souvenirTag = '';
+            if (displayGift !== '') {
+                const isExpired = currentCategory === 'expired_souvenir_stocks';
+                const dateStr = stock.gift_last_buy_date ? `<span style="color: ${isExpired ? '#9ca3af' : '#dc2626'}; margin-left: 8px;">⏳ 最後買進：${stock.gift_last_buy_date}</span>` : '';
+
+                souvenirTag = `
                 <div style="margin-top: 8px;">
                     <div style="font-size: 0.85rem; padding: 6px 12px; border-radius: 6px; border: 1px solid ${isExpired ? '#d1d5db' : '#fde68a'}; background-color: ${isExpired ? '#f3f4f6' : '#fef3c7'}; color: ${isExpired ? '#6b7280' : '#b45309'}; display: inline-block;">
                         🎁 <strong>紀念品：</strong>${displayGift} ${dateStr}
                     </div>
                 </div>`;
-        }
-        // 🆕 任務四：跌出榜單警示 UI 區塊
-        let droppedWarning = '';
-        if (currentCategory === 'recent_dropped_stocks') { // 👈 這裡改成 recent_dropped_stocks
-            droppedWarning = `
+            }
+            // 🆕 任務四：跌出榜單警示 UI 區塊
+            let droppedWarning = '';
+            if (currentCategory === 'recent_dropped_stocks') { // 👈 這裡改成 recent_dropped_stocks
+                droppedWarning = `
                 <div style="margin-top: 8px;">
                     <div style="font-size: 0.9rem; padding: 6px 12px; border-radius: 6px; border: 1px solid #feb2b2; background-color: #fff5f5; color: #c53030; display: inline-block;">
                         <strong>⚠️ 淘汰原因：</strong>${stock.reason || '未達標'}
                     </div>
                 </div>`;
-        }
-        // 🆕 任務五：警示股 UI 區塊 (注意/處置標籤)
-        let warningTag = '';
-        if (stock.warning_status) {
-            const isDisposal = stock.warning_status.includes("處置");
-            // 處置用深橘色，注意用黃色
-            const bgColor = isDisposal ? '#fffaf3' : '#fffdf2';
-            const borderColor = isDisposal ? '#fbd38d' : '#fef3c7';
-            const textColor = isDisposal ? '#c05621' : '#b45309';
+            }
+            // 🆕 任務五：警示股 UI 區塊 (注意/處置標籤)
+            let warningTag = '';
+            if (stock.warning_status) {
+                const isDisposal = stock.warning_status.includes("處置");
+                // 處置用深橘色，注意用黃色
+                const bgColor = isDisposal ? '#fffaf3' : '#fffdf2';
+                const borderColor = isDisposal ? '#fbd38d' : '#fef3c7';
+                const textColor = isDisposal ? '#c05621' : '#b45309';
 
-            warningTag = `
+                warningTag = `
                 <div style="margin-top: 8px;">
                     <div style="font-size: 0.9rem; padding: 6px 12px; border-radius: 6px; border: 1px solid ${borderColor}; background-color: ${bgColor}; color: ${textColor}; display: inline-block;">
                         <strong>⚠️ 市場警示：</strong>${stock.warning_status}
                     </div>
                 </div>`;
-        }
+            }
 
-        // 🚀 防呆機制：如果沒有抓到金額，顯示 ---
-        let displayAmount = stock.dividend_amount !== undefined ? stock.dividend_amount : '---';
-        let latestPrice = stock.latest_price !== undefined ? stock.latest_price : '---';
+            // 🚀 防呆機制：如果沒有抓到金額，顯示 ---
+            let displayAmount = stock.dividend_amount !== undefined ? stock.dividend_amount : '---';
+            let latestPrice = stock.latest_price !== undefined ? stock.latest_price : '---';
 
-        // 取得目前的持股數來計算預計領取總額
-        const sharesInput = document.getElementById('sharesInput');
-        const shares = sharesInput ? (parseFloat(sharesInput.value) || 1000) : 1000;
-        let expectedTotal = stock.dividend_amount !== undefined ? (stock.dividend_amount * shares).toLocaleString() : '---';
+            // 取得目前的持股數來計算預計領取總額
+            const sharesInput = document.getElementById('sharesInput');
+            const shares = sharesInput ? (parseFloat(sharesInput.value) || 1000) : 1000;
+            let expectedTotal = stock.dividend_amount !== undefined ? (stock.dividend_amount * shares).toLocaleString() : '---';
 
-        // 🆕 任務三：皇冠圖示與走勢圖連結 (統一導向 Yahoo 股市)
-        const evergreenCrown = stock.is_evergreen ? '<span title="👑 年度長青樹" style="cursor:help; margin-right: 6px;">👑</span>' : '';
-        const financeUrl = `https://tw.stock.yahoo.com/quote/${stock.symbol}`;
+            // 🆕 任務三：皇冠圖示與走勢圖連結 (統一導向 Yahoo 股市)
+            const evergreenCrown = stock.is_evergreen ? '<span title="👑 年度長青樹" style="cursor:help; margin-right: 6px;">👑</span>' : '';
+            const financeUrl = `https://tw.stock.yahoo.com/quote/${stock.symbol}`;
 
-        // 🚀 修正：恢復三欄式結構 (名稱 | 按鈕 | 領取金額)
-        return `
-            <tr data-symbol="${stock.symbol}">
+            // 🚀 修正：恢復三欄式結構 (名稱 | 按鈕 | 領取金額)
+            return `
+            <tr data-symbol="${stock.symbol}" style="${trStyle}">
                 <td>
                     <div style="margin-bottom: 6px; font-size: 1.15rem; display: flex; align-items: center;">
                         ${evergreenCrown}
-                        <a href="${financeUrl}" target="_blank" class="stock-link">
+                        <a href="${financeUrl}" target="_blank" class="stock-link" title="點擊查看股價走勢">
                             ${stock.name} (${stock.symbol})
                         </a>
                         ${medals}
@@ -176,9 +195,8 @@ const renderTable = () => {
                         現價：${latestPrice} 元
                     </div>
                     ${souvenirTag}
-                    ${warningTag}
                     ${droppedWarning}
-                </td>
+                    ${returningBadge} </td>
                 <td style="vertical-align: middle; text-align: center;">
                     <button class="dividend-btn" data-symbol="${stock.symbol}" title="點擊查看詳細體檢資料" 
                         style="background: #edf2f7; color: #4a5568; border: 1px solid #e2e8f0; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 0.9rem;">
@@ -190,6 +208,7 @@ const renderTable = () => {
                 </td>
             </tr>
         `;
+        }
     }).join('');
 
     stockTableBody.innerHTML = rows || '<tr><td colspan="3" style="text-align:center;">此類別目前無符合條件的股票</td></tr>';
@@ -246,7 +265,7 @@ if (droppedTabBtn) {
     droppedTabBtn.addEventListener('click', () => {
         document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
         // 👇 將當前類別切換為 recent_dropped_stocks 並重新渲染表格
-        currentCategory = 'recent_dropped_stocks'; 
+        currentCategory = 'recent_dropped_stocks';
         renderTable();
     });
 }
