@@ -668,6 +668,24 @@ def main():
                     is_evergreen = (current_listed_count >= 12) and (hits_in_last_12 >= 10)
 
                     # ==========================================
+                    # 🆕 處理敗部復活 (邊緣震盪) 邏輯
+                    # ==========================================
+                    is_returning = False
+                    
+                    # 🛡️ 防呆機制 1：如果字典裡還沒有這個 key，就幫它建一個空的清單
+                    if "recent_dropped_stocks" not in results:
+                        results["recent_dropped_stocks"] = []
+                        
+                    # 檢查這檔股票是否在最近的淘汰名單中
+                    for i, dropped_stock in enumerate(results["recent_dropped_stocks"]):
+                        # 🛡️ 防呆機制 2：使用 .get() 安全讀取 symbol，避免資料缺失導致二次報錯
+                        if dropped_stock.get("symbol") == code:
+                            is_returning = True
+                            # 既然已經達標回歸，就從「跌出榜單」中刪除，避免重複出現
+                            del results["recent_dropped_stocks"][i]
+                            break
+
+                    # ==========================================
                     # 🆕 任務三：判定是否為飆股/警示股
                     # ==========================================
                     warning_status = ""
@@ -707,7 +725,8 @@ def main():
                         "is_evergreen": bool(is_evergreen),  # 👑 記得這行後面要加逗號！
                         "history_hits": history_hits,                  # 🛠️ 修正 3：必須把紀錄存入 JSON！
                         "last_hit_date": now_date.strftime("%Y-%m-%d"), # 🛠️ 修正 3：必須把日期存入 JSON！
-                        "warning_status": warning_status  # 🆕 記得在這裡補上這行，把狀態存進去！
+                        "warning_status": warning_status,  # 🆕 記得在這裡補上這行，把狀態存進去！
+                        "is_returning": is_returning  # 🆕 將敗部復活狀態存入 JSON
                     }
                     
                     # 🆕 嚴格均線淘汰邏輯
