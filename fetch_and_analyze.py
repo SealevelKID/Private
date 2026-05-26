@@ -729,17 +729,6 @@ def main():
                         "is_returning": is_returning  # 🆕 將敗部復活狀態存入 JSON
                     }
                     
-                    # 🆕 嚴格均線淘汰邏輯
-                    if beta < 0.8 and dividend_yield > 4.0:
-                        # 防禦型：股價不可嚴重跌破年線 (容許 5% 誤差)
-                        if ma_240 and latest_price < (ma_240 * 0.95):
-                            reject_reason = "長線趨勢走弱 (股價跌破年線)"
-                        else:
-                            results["defensive_stocks"].append(stock_info)
-                            classified = True
-                            
-                    is_eps_growing = len(eps_data) >= 4 and (eps_data[-1] is not None) and (eps_data[-4] is not None) and (eps_data[-1] > eps_data[-4])
-                    
                     # ==========================================
                     # 🚀 分類與攔截網：合格的好股票，若被警示則獨立存放
                     # ==========================================
