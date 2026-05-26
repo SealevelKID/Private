@@ -268,7 +268,7 @@
             ],
             "last_hit_date": "2026-05-26",
             "warning_status": "",
-            "is_returning": true
+            "is_returning": false
         },
         {
             "symbol": "1722",
@@ -304,7 +304,7 @@
             ],
             "last_hit_date": "2026-05-26",
             "warning_status": "",
-            "is_returning": true
+            "is_returning": false
         },
         {
             "symbol": "1723",
@@ -562,7 +562,7 @@
             ],
             "last_hit_date": "2026-05-26",
             "warning_status": "",
-            "is_returning": true,
+            "is_returning": false,
             "has_souvenir": true,
             "souvenir_title": "石墨烯圍脖 參考圖",
             "souvenir_last_buy_date": "2026-03-26"
@@ -601,7 +601,7 @@
             ],
             "last_hit_date": "2026-05-26",
             "warning_status": "",
-            "is_returning": true,
+            "is_returning": false,
             "has_souvenir": true,
             "souvenir_title": "石墨烯圍脖 參考圖",
             "souvenir_last_buy_date": "2026-03-26"
@@ -931,7 +931,7 @@
             "has_volatility_warning": false,
             "pure_eps_ratio_avg": 99.4,
             "capital_event": "",
-            "major_news_event": true,
+            "major_news_event": false,
             "gift_name": "",
             "gift_last_buy_date": "",
             "is_evergreen": false,
@@ -967,7 +967,7 @@
             "has_volatility_warning": false,
             "pure_eps_ratio_avg": 99.4,
             "capital_event": "",
-            "major_news_event": true,
+            "major_news_event": false,
             "gift_name": "",
             "gift_last_buy_date": "",
             "is_evergreen": false,
@@ -1071,7 +1071,7 @@
             "is_dividend_spike": false,
             "last_year_eps": 11.33,
             "recent_news_alert": true,
-            "google_news_url": "https://news.google.com/rss/articles/CBMiT0FVX3lxTE42VjlKZDZNRmxhUGRERk5Cbmt4TWloQmRqRC1hX2lsZzZ0Z3lsbXNacUp3em5zM2duaWE0TzNEbW02d1owc3E3bHdGSkJWLTg?oc=5",
+            "google_news_url": "https://news.google.com/rss/articles/CBMi2wFBVV95cUxOVlRDajNjc0dkc1A4WjZMd184OE9JMF9OSTF2X0RjeDlCZE42ekJoekVZZWllT1lYUkJ4V3pmb3dtTVhudUUzcDBtOWhhNXM2N0lKS3BqcmMzMXZtOVFNSE1LOGhiS1cwVy1yUGRxU0wxVGxyMXRhbWJJcTFoejl4ajhubjEyZk43bENrQnZQcWJ3cGwyaEZ4c1g2VEt6eHNUcDcxa0RXR3U3NG5YZHRKanUzYWFNU1hsY19MZTZJS3B0eEJaeG8yOEppT0w1RDUwNzBGNGRwQ2lCeTQ?oc=5",
             "is_0050": false,
             "is_financial_holding": false,
             "is_super_yield": true,
@@ -1090,7 +1090,7 @@
             ],
             "last_hit_date": "2026-05-26",
             "warning_status": "",
-            "is_returning": true
+            "is_returning": false
         },
         {
             "symbol": "2474",
@@ -1107,7 +1107,7 @@
             "is_dividend_spike": false,
             "last_year_eps": 11.33,
             "recent_news_alert": true,
-            "google_news_url": "https://news.google.com/rss/articles/CBMiT0FVX3lxTE42VjlKZDZNRmxhUGRERk5Cbmt4TWloQmRqRC1hX2lsZzZ0Z3lsbXNacUp3em5zM2duaWE0TzNEbW02d1owc3E3bHdGSkJWLTg?oc=5",
+            "google_news_url": "https://news.google.com/rss/articles/CBMi2wFBVV95cUxOVlRDajNjc0dkc1A4WjZMd184OE9JMF9OSTF2X0RjeDlCZE42ekJoekVZZWllT1lYUkJ4V3pmb3dtTVhudUUzcDBtOWhhNXM2N0lKS3BqcmMzMXZtOVFNSE1LOGhiS1cwVy1yUGRxU0wxVGxyMXRhbWJJcTFoejl4ajhubjEyZk43bENrQnZQcWJ3cGwyaEZ4c1g2VEt6eHNUcDcxa0RXR3U3NG5YZHRKanUzYWFNU1hsY19MZTZJS3B0eEJaeG8yOEppT0w1RDUwNzBGNGRwQ2lCeTQ?oc=5",
             "is_0050": false,
             "is_financial_holding": false,
             "is_super_yield": true,
@@ -1126,7 +1126,7 @@
             ],
             "last_hit_date": "2026-05-26",
             "warning_status": "",
-            "is_returning": true
+            "is_returning": false
         },
         {
             "symbol": "2480",
@@ -1367,7 +1367,7 @@
             "dividend_amount": 0.78,
             "beta": 0.1017,
             "avg_fill_dividend_days": 0.0,
-            "failed_fill_count": 1,
+            "failed_fill_count": 0,
             "is_dividend_spike": false,
             "last_year_eps": 1.02,
             "recent_news_alert": true,
@@ -1375,8 +1375,8 @@
             "is_0050": false,
             "is_financial_holding": false,
             "is_super_yield": false,
-            "is_fast_fill": false,
-            "is_outlier_warning": true,
+            "is_fast_fill": true,
+            "is_outlier_warning": false,
             "is_long_dividend": true,
             "has_volatility_warning": false,
             "pure_eps_ratio_avg": 100.0,
@@ -1403,7 +1403,7 @@
             "dividend_amount": 0.78,
             "beta": 0.1017,
             "avg_fill_dividend_days": 0.0,
-            "failed_fill_count": 1,
+            "failed_fill_count": 0,
             "is_dividend_spike": false,
             "last_year_eps": 1.02,
             "recent_news_alert": true,
@@ -1411,8 +1411,8 @@
             "is_0050": false,
             "is_financial_holding": false,
             "is_super_yield": false,
-            "is_fast_fill": false,
-            "is_outlier_warning": true,
+            "is_fast_fill": true,
+            "is_outlier_warning": false,
             "is_long_dividend": true,
             "has_volatility_warning": false,
             "pure_eps_ratio_avg": 100.0,
@@ -2191,7 +2191,7 @@
             "has_volatility_warning": false,
             "pure_eps_ratio_avg": 100.0,
             "capital_event": "",
-            "major_news_event": true,
+            "major_news_event": false,
             "gift_name": "",
             "gift_last_buy_date": "",
             "is_evergreen": false,
@@ -2227,7 +2227,7 @@
             "has_volatility_warning": false,
             "pure_eps_ratio_avg": 100.0,
             "capital_event": "",
-            "major_news_event": true,
+            "major_news_event": false,
             "gift_name": "",
             "gift_last_buy_date": "",
             "is_evergreen": false,
@@ -2272,7 +2272,7 @@
             ],
             "last_hit_date": "2026-05-26",
             "warning_status": "",
-            "is_returning": true
+            "is_returning": false
         },
         {
             "symbol": "5876",
@@ -2308,7 +2308,7 @@
             ],
             "last_hit_date": "2026-05-26",
             "warning_status": "",
-            "is_returning": true
+            "is_returning": false
         },
         {
             "symbol": "6136",
@@ -2759,11 +2759,11 @@
             "name": "長華*",
             "is_niche_stable": false,
             "listed_count": 1,
-            "latest_price": 44.9,
+            "latest_price": 46.35,
             "avg_vol_20d_sheets": 3027.0,
-            "dividend_yield_pct": 6.04,
+            "dividend_yield_pct": 5.85,
             "dividend_amount": 2.71,
-            "beta": 0.6622,
+            "beta": 0.6701,
             "avg_fill_dividend_days": 2.5,
             "failed_fill_count": 0,
             "is_dividend_spike": false,
@@ -2772,7 +2772,7 @@
             "google_news_url": "https://news.google.com/rss/articles/CBMi2wFBVV95cUxOaHptQWw0VjZTVHRiZndTZW9Fc01JOTNwVUFWTWZtZGpmSFlQNHNVc1pfZ1JSdEpCdzRpTjZVSUJGbHJJalZhXzBjUlRsYUtaY05Fa0c2QkQ0Q28xWlp1dS04UHJBeHdBUktYNlpNZ3RCOVpxcTNRWUxwZjBGX3lsY2FOdlI5bGU3OXJJYnQtWGZJcHNTdURSdWo4clVpb05oSEZ0V2lPWGJlM2JwRF80c25UZjNPMWJ2MlByVjhnTjVWM3d4YTdiUGpaTzZiWVI1RjgwajlBRzlxalk?oc=5",
             "is_0050": false,
             "is_financial_holding": false,
-            "is_super_yield": true,
+            "is_super_yield": false,
             "is_fast_fill": true,
             "is_outlier_warning": false,
             "is_long_dividend": true,
@@ -2795,11 +2795,11 @@
             "name": "長華*",
             "is_niche_stable": false,
             "listed_count": 1,
-            "latest_price": 44.9,
+            "latest_price": 46.35,
             "avg_vol_20d_sheets": 3027.0,
-            "dividend_yield_pct": 6.04,
+            "dividend_yield_pct": 5.85,
             "dividend_amount": 2.71,
-            "beta": 0.6622,
+            "beta": 0.6701,
             "avg_fill_dividend_days": 2.5,
             "failed_fill_count": 0,
             "is_dividend_spike": false,
@@ -2808,7 +2808,7 @@
             "google_news_url": "https://news.google.com/rss/articles/CBMi2wFBVV95cUxOaHptQWw0VjZTVHRiZndTZW9Fc01JOTNwVUFWTWZtZGpmSFlQNHNVc1pfZ1JSdEpCdzRpTjZVSUJGbHJJalZhXzBjUlRsYUtaY05Fa0c2QkQ0Q28xWlp1dS04UHJBeHdBUktYNlpNZ3RCOVpxcTNRWUxwZjBGX3lsY2FOdlI5bGU3OXJJYnQtWGZJcHNTdURSdWo4clVpb05oSEZ0V2lPWGJlM2JwRF80c25UZjNPMWJ2MlByVjhnTjVWM3d4YTdiUGpaTzZiWVI1RjgwajlBRzlxalk?oc=5",
             "is_0050": false,
             "is_financial_holding": false,
-            "is_super_yield": true,
+            "is_super_yield": false,
             "is_fast_fill": true,
             "is_outlier_warning": false,
             "is_long_dividend": true,
@@ -2831,11 +2831,11 @@
             "name": "致新",
             "is_niche_stable": false,
             "listed_count": 1,
-            "latest_price": 279.5,
+            "latest_price": 288.0,
             "avg_vol_20d_sheets": 1535.0,
-            "dividend_yield_pct": 5.72,
+            "dividend_yield_pct": 5.56,
             "dividend_amount": 16.0,
-            "beta": 0.6091,
+            "beta": 0.6162,
             "avg_fill_dividend_days": 0.0,
             "failed_fill_count": 1,
             "is_dividend_spike": false,
@@ -2867,11 +2867,11 @@
             "name": "致新",
             "is_niche_stable": false,
             "listed_count": 1,
-            "latest_price": 279.5,
+            "latest_price": 288.0,
             "avg_vol_20d_sheets": 1535.0,
-            "dividend_yield_pct": 5.72,
+            "dividend_yield_pct": 5.56,
             "dividend_amount": 16.0,
-            "beta": 0.6091,
+            "beta": 0.6162,
             "avg_fill_dividend_days": 0.0,
             "failed_fill_count": 1,
             "is_dividend_spike": false,
@@ -2903,11 +2903,11 @@
             "name": "大台北",
             "is_niche_stable": true,
             "listed_count": 1,
-            "latest_price": 29.2,
+            "latest_price": 29.05,
             "avg_vol_20d_sheets": 355.0,
-            "dividend_yield_pct": 4.11,
+            "dividend_yield_pct": 4.13,
             "dividend_amount": 1.2,
-            "beta": -0.1881,
+            "beta": -0.1878,
             "avg_fill_dividend_days": 0.0,
             "failed_fill_count": 0,
             "is_dividend_spike": false,
@@ -2939,11 +2939,11 @@
             "name": "大台北",
             "is_niche_stable": true,
             "listed_count": 1,
-            "latest_price": 29.2,
+            "latest_price": 29.05,
             "avg_vol_20d_sheets": 355.0,
-            "dividend_yield_pct": 4.11,
+            "dividend_yield_pct": 4.13,
             "dividend_amount": 1.2,
-            "beta": -0.1881,
+            "beta": -0.1878,
             "avg_fill_dividend_days": 0.0,
             "failed_fill_count": 0,
             "is_dividend_spike": false,
@@ -2975,11 +2975,11 @@
             "name": "中保科",
             "is_niche_stable": true,
             "listed_count": 1,
-            "latest_price": 112.0,
+            "latest_price": 113.0,
             "avg_vol_20d_sheets": 427.0,
-            "dividend_yield_pct": 4.64,
+            "dividend_yield_pct": 4.6,
             "dividend_amount": 5.2,
-            "beta": 0.1819,
+            "beta": 0.1841,
             "avg_fill_dividend_days": 0.0,
             "failed_fill_count": 0,
             "is_dividend_spike": false,
@@ -3014,11 +3014,11 @@
             "name": "中保科",
             "is_niche_stable": true,
             "listed_count": 1,
-            "latest_price": 112.0,
+            "latest_price": 113.0,
             "avg_vol_20d_sheets": 427.0,
-            "dividend_yield_pct": 4.64,
+            "dividend_yield_pct": 4.6,
             "dividend_amount": 5.2,
-            "beta": 0.1819,
+            "beta": 0.1841,
             "avg_fill_dividend_days": 0.0,
             "failed_fill_count": 0,
             "is_dividend_spike": false,
@@ -3053,11 +3053,11 @@
             "name": "宏全",
             "is_niche_stable": false,
             "listed_count": 1,
-            "latest_price": 127.0,
+            "latest_price": 124.5,
             "avg_vol_20d_sheets": 1672.0,
-            "dividend_yield_pct": 4.88,
+            "dividend_yield_pct": 4.98,
             "dividend_amount": 6.2,
-            "beta": 0.2,
+            "beta": 0.1839,
             "avg_fill_dividend_days": 0.0,
             "failed_fill_count": 0,
             "is_dividend_spike": false,
@@ -3089,11 +3089,11 @@
             "name": "宏全",
             "is_niche_stable": false,
             "listed_count": 1,
-            "latest_price": 127.0,
+            "latest_price": 124.5,
             "avg_vol_20d_sheets": 1672.0,
-            "dividend_yield_pct": 4.88,
+            "dividend_yield_pct": 4.98,
             "dividend_amount": 6.2,
-            "beta": 0.2,
+            "beta": 0.1839,
             "avg_fill_dividend_days": 0.0,
             "failed_fill_count": 0,
             "is_dividend_spike": false,
@@ -3156,7 +3156,7 @@
             ],
             "last_hit_date": "2026-05-26",
             "warning_status": "",
-            "is_returning": true
+            "is_returning": false
         },
         {
             "symbol": "2301",
@@ -3173,7 +3173,7 @@
             "is_dividend_spike": false,
             "last_year_eps": 6.64,
             "recent_news_alert": true,
-            "google_news_url": "https://news.google.com/rss/articles/CBMiS0FVX3lxTE1INjA5ZXhmX1ltYm4tSXhKaWFRMGU3VHNPWFk0RDJYWVdBaWRtQ3RpUzVpdU9tZVhUaWJUM1J5Zld4TTBXRlFnckczbw?oc=5",
+            "google_news_url": "https://news.google.com/rss/articles/CBMiS0FVX3lxTE5kQS1DekF2eG9PSHh2ZEVvYzhvSTdQSGJYMGEySXE1TUIxanE1d3Y4b3JoRVVERldqelNZZW5leTYzb05KSXBaVzdqdw?oc=5",
             "is_0050": true,
             "is_financial_holding": false,
             "is_super_yield": false,
@@ -3381,7 +3381,7 @@
             ],
             "last_hit_date": "2026-05-26",
             "warning_status": "",
-            "is_returning": true
+            "is_returning": false
         },
         {
             "symbol": "2382",
@@ -3509,7 +3509,7 @@
             "is_dividend_spike": false,
             "last_year_eps": 7.897435,
             "recent_news_alert": true,
-            "google_news_url": "https://news.google.com/rss/articles/CBMiuwJBVV95cUxOLUtWaTNBOXc3ZV9PbGZTOF9WQ1JHaEZrMHZTY3Bqa25aR3hRSTNORlBjdWRPbHhfOE1QVmEyeXpKUkNvR0tIb0FXcHFxRmwzU0puc3J0bzd0Y3RKT0RwWUZwV3RGQnRwb0xqLWFMRkhQcFhtZlM2UGlBNkMyM2hpZ3JNNzVsUGZaSG16ZFptNzR2OXdsN2pxaHNSQzd1dEttWXUzSW1mYUxJZWJUMktVUXVhc3lqbzJxaUR0TUo0cjhxc1BUSmZFTWRzZ1RCRV9ILTQzYVl4bU1YYjRMWmhHYjRYRkQzR1NJdTNiSVpRU3VDRHBkWkVtbkQ3QUFFd3M1NjRlcm5oSF8tdi0xTXdMS2JkbUdiV1lOWV9HYVVseEpwYVNia2ZnT2VTMDdFdHh6TWhlVThLSXVuMGs?oc=5",
+            "google_news_url": "https://news.google.com/rss/articles/CBMiwAJBVV95cUxPcnJleTZBTFJlNUVjT3QyZVcwaVNzdmVZdFJhTFBrM1k0V25ReDFwSGF2Y2xCM2RleElvdG5meE44cHFaTzlUYnU2Um1KNjRkQ3JTWDRERTRsSUxTN3pQNDNwQUM2Ny0tcl90ZHRVMlhya0tiVU55V082RU9PZHQ0VjhKOWtrZGZCT0VORFh5aUg5ZHI2ek85NkNfTE5HNGtRWXh5d2tOcFlQdThOVGdoeGw1WGZNTDRnc3VCLUdmRWdLVjJaTXlzQzc5SktHWG1qMlhzX3FZbHAxSUVSSG9NQ21hSFp2QzRmUXpvM0gyMXJ6MXR0ZUxtMHNZYzFrUDNkdUZnTFBkQ3RQVHlqRHlhX29VTHlmcFA3cjFqS3BmVHpuYTZWZ29SRFNINm0zWUNUYUg2c1pWMXRRSzJCamJPMg?oc=5",
             "is_0050": false,
             "is_financial_holding": false,
             "is_super_yield": false,
@@ -3642,7 +3642,7 @@
             ],
             "last_hit_date": "2026-05-26",
             "warning_status": "",
-            "is_returning": true,
+            "is_returning": false,
             "has_souvenir": true,
             "souvenir_title": "7-11 商品卡 35元 參考圖",
             "souvenir_last_buy_date": "2026-04-09"
@@ -3662,7 +3662,7 @@
             "is_dividend_spike": false,
             "last_year_eps": 15.95,
             "recent_news_alert": true,
-            "google_news_url": "https://news.google.com/rss/articles/CBMiT0FVX3lxTE1TUHk1WGdhaFdhbFRhYzc2RjBWeW1oM19NenRVZXY1ZUhvZ3B3WkF0Y2N6cGVqeDh2elZ6TUxkdnpFME1JVFFPdU81MWlpemc?oc=5",
+            "google_news_url": "https://news.google.com/rss/articles/CBMiWkFVX3lxTE5WQmFJV2JtLThocTlfQVkzSFRIOGEzdEs3V0FSc0tEOXpnNmVrUFNpS0pQSlE5UkkzRUprVml1dDZmSHFtb3BSQW9sUmhFOUtMRDB0eFlKdDNkd9IBX0FVX3lxTFBVN3JNelJQeHNaTW1UNDZBV1Jlb3VWZjgtNkVaWU9VVm1HLUt2Z1ZpWUQ1Y2Z1NDdFVXRMYndmTF83Vm1OUWdzX1ZpOTU4akNUR3RqMkQxbVNIb3hNZTNz?oc=5",
             "is_0050": false,
             "is_financial_holding": false,
             "is_super_yield": false,
@@ -3825,7 +3825,7 @@
             ],
             "last_hit_date": "2026-05-26",
             "warning_status": "",
-            "is_returning": true
+            "is_returning": false
         },
         {
             "symbol": "6155",
@@ -3852,7 +3852,7 @@
             "has_volatility_warning": true,
             "pure_eps_ratio_avg": 82.3,
             "capital_event": "",
-            "major_news_event": true,
+            "major_news_event": false,
             "gift_name": "",
             "gift_last_buy_date": "",
             "is_evergreen": false,
@@ -4256,7 +4256,7 @@
             "has_volatility_warning": true,
             "pure_eps_ratio_avg": 100.0,
             "capital_event": "",
-            "major_news_event": true,
+            "major_news_event": false,
             "gift_name": "",
             "gift_last_buy_date": "",
             "is_evergreen": false,
@@ -4265,7 +4265,7 @@
             ],
             "last_hit_date": "2026-05-26",
             "warning_status": "處置中",
-            "is_returning": true
+            "is_returning": false
         }
     ],
     "recent_dropped_stocks": [
@@ -10384,7 +10384,7 @@
         {
             "symbol": "8028",
             "name": "昇陽半導體",
-            "reason": "利息太低：最新殖利率僅 0.75% (未達 1.5% 基本門檻)"
+            "reason": "利息太低：最新殖利率僅 0.71% (未達 1.5% 基本門檻)"
         },
         {
             "symbol": "8033",
@@ -10454,7 +10454,7 @@
         {
             "symbol": "8150",
             "name": "南茂",
-            "reason": "處於模糊地帶：未符合四大名單的入選資格"
+            "reason": "利息太低：最新殖利率僅 1.42% (未達 1.5% 基本門檻)"
         },
         {
             "symbol": "8162",
@@ -10474,7 +10474,7 @@
         {
             "symbol": "8210",
             "name": "勤誠",
-            "reason": "利息太低：最新殖利率僅 0.56% (未達 1.5% 基本門檻)"
+            "reason": "利息太低：最新殖利率僅 0.52% (未達 1.5% 基本門檻)"
         },
         {
             "symbol": "8213",
@@ -10504,7 +10504,7 @@
         {
             "symbol": "8271",
             "name": "宇瞻",
-            "reason": "利息太低：最新殖利率僅 0.98% (未達 1.5% 基本門檻)"
+            "reason": "利息太低：最新殖利率僅 0.97% (未達 1.5% 基本門檻)"
         },
         {
             "symbol": "8341",
@@ -10544,7 +10544,7 @@
         {
             "symbol": "8438",
             "name": "昶昕",
-            "reason": "利息太低：最新殖利率僅 1.41% (未達 1.5% 基本門檻)"
+            "reason": "利息太低：最新殖利率僅 1.42% (未達 1.5% 基本門檻)"
         },
         {
             "symbol": "8442",
@@ -10639,7 +10639,7 @@
         {
             "symbol": "8996",
             "name": "高力",
-            "reason": "利息太低：最新殖利率僅 0.73% (未達 1.5% 基本門檻)"
+            "reason": "利息太低：最新殖利率僅 0.76% (未達 1.5% 基本門檻)"
         },
         {
             "symbol": "9103",
@@ -10649,7 +10649,7 @@
         {
             "symbol": "9105",
             "name": "泰金寶-DR",
-            "reason": "處於模糊地帶：未符合四大名單的入選資格"
+            "reason": "趨勢未達成長股動能標準 (均線未呈多頭排列)"
         },
         {
             "symbol": "9110",
@@ -10834,7 +10834,7 @@
         {
             "symbol": "9958",
             "name": "世紀鋼",
-            "reason": "股息發放不穩定（波動過大或曾中斷）"
+            "reason": "處於模糊地帶：未符合四大名單的入選資格"
         }
     ],
     "last_update": "2026-05-26",
@@ -11029,7 +11029,7 @@
             ],
             "last_hit_date": "2026-05-26",
             "warning_status": "",
-            "is_returning": true,
+            "is_returning": false,
             "has_souvenir": true,
             "souvenir_title": "石墨烯圍脖 參考圖",
             "souvenir_last_buy_date": "2026-03-26"
@@ -11429,11 +11429,11 @@
             "name": "中保科",
             "is_niche_stable": true,
             "listed_count": 1,
-            "latest_price": 112.0,
+            "latest_price": 113.0,
             "avg_vol_20d_sheets": 427.0,
-            "dividend_yield_pct": 4.64,
+            "dividend_yield_pct": 4.6,
             "dividend_amount": 5.2,
-            "beta": 0.1819,
+            "beta": 0.1841,
             "avg_fill_dividend_days": 0.0,
             "failed_fill_count": 0,
             "is_dividend_spike": false,
@@ -11634,7 +11634,7 @@
             "is_dividend_spike": false,
             "last_year_eps": 7.897435,
             "recent_news_alert": true,
-            "google_news_url": "https://news.google.com/rss/articles/CBMiuwJBVV95cUxOLUtWaTNBOXc3ZV9PbGZTOF9WQ1JHaEZrMHZTY3Bqa25aR3hRSTNORlBjdWRPbHhfOE1QVmEyeXpKUkNvR0tIb0FXcHFxRmwzU0puc3J0bzd0Y3RKT0RwWUZwV3RGQnRwb0xqLWFMRkhQcFhtZlM2UGlBNkMyM2hpZ3JNNzVsUGZaSG16ZFptNzR2OXdsN2pxaHNSQzd1dEttWXUzSW1mYUxJZWJUMktVUXVhc3lqbzJxaUR0TUo0cjhxc1BUSmZFTWRzZ1RCRV9ILTQzYVl4bU1YYjRMWmhHYjRYRkQzR1NJdTNiSVpRU3VDRHBkWkVtbkQ3QUFFd3M1NjRlcm5oSF8tdi0xTXdMS2JkbUdiV1lOWV9HYVVseEpwYVNia2ZnT2VTMDdFdHh6TWhlVThLSXVuMGs?oc=5",
+            "google_news_url": "https://news.google.com/rss/articles/CBMiwAJBVV95cUxPcnJleTZBTFJlNUVjT3QyZVcwaVNzdmVZdFJhTFBrM1k0V25ReDFwSGF2Y2xCM2RleElvdG5meE44cHFaTzlUYnU2Um1KNjRkQ3JTWDRERTRsSUxTN3pQNDNwQUM2Ny0tcl90ZHRVMlhya0tiVU55V082RU9PZHQ0VjhKOWtrZGZCT0VORFh5aUg5ZHI2ek85NkNfTE5HNGtRWXh5d2tOcFlQdThOVGdoeGw1WGZNTDRnc3VCLUdmRWdLVjJaTXlzQzc5SktHWG1qMlhzX3FZbHAxSUVSSG9NQ21hSFp2QzRmUXpvM0gyMXJ6MXR0ZUxtMHNZYzFrUDNkdUZnTFBkQ3RQVHlqRHlhX29VTHlmcFA3cjFqS3BmVHpuYTZWZ29SRFNINm0zWUNUYUg2c1pWMXRRSzJCamJPMg?oc=5",
             "is_0050": false,
             "is_financial_holding": false,
             "is_super_yield": false,
@@ -11731,7 +11731,7 @@
             ],
             "last_hit_date": "2026-05-26",
             "warning_status": "",
-            "is_returning": true,
+            "is_returning": false,
             "has_souvenir": true,
             "souvenir_title": "7-11 商品卡 35元 參考圖",
             "souvenir_last_buy_date": "2026-04-09"
