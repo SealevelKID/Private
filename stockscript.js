@@ -27,10 +27,6 @@ const renderTable = () => {
     const sortSelect = document.getElementById('sortSelect');
     const maxPriceInput = document.getElementById('maxPriceInput');
     const sortType = sortSelect ? sortSelect.value : 'price_asc';
-    // 若沒有輸入股價上限，預設為無限大 (Infinity)
-    const maxPrice = maxPriceInput && maxPriceInput.value !== '' ? parseFloat(maxPriceInput.value) : Infinity;
-
-    const excludeKeywords = ["超商", "7-11", "全家", "萊爾富", "OK", "商品卡", "禮物卡", "抵用券"];
 
     // 🛡️ 強化防呆：確保空字串不會意外轉換失敗，導致過濾掉所有股票
     let maxPrice = Infinity;
@@ -40,6 +36,8 @@ const renderTable = () => {
             maxPrice = parsed;
         }
     }
+
+    const excludeKeywords = ["超商", "7-11", "全家", "萊爾富", "OK", "商品卡", "禮物卡", "抵用券"];
 
     // 🆕 建立一個 Set 用來記錄已經出現過的股票代號
     let seenSymbols = new Set();
@@ -108,84 +106,86 @@ const renderTable = () => {
         // 🆕 任務二：新增冷門穩健標籤 (冰塊圖示)
         if (stock.is_niche_stable) {
             medals += '<span title="🧊 冷門穩健股：交易量較低，建議分批布局" style="cursor:help; margin-left: 4px;">🧊</span>';
-            // --- 增加：統計數據顯示 (建議放在價格下方) ---
-            const statsHtml = `
+
+        } // ✅ 在這裡加上大括號關閉判斷
+        // --- 增加：統計數據顯示 (建議放在價格下方) ---
+        const statsHtml = `
     <div style="font-size: 0.85em; color: #666; margin-top: 5px;">
         🎯 上榜: <strong>${stock.listed_count || 0}</strong> 月 | 
         🛑 貼息紅線: <strong>${stock.failed_fill_count || 0}</strong> 次
     </div>
 `;
-            // 🆕 處理敗部復活的視覺效果
-            let trStyle = '';
-            let returningBadge = '';
+        // 🆕 處理敗部復活的視覺效果
+        let trStyle = '';
+        let returningBadge = '';
 
-            if (stock.is_returning) {
-                medals += '<span title="🔄 觀察中 (近期曾跌出榜單)" style="cursor:help; margin-left: 4px;">🔄</span>';
-                trStyle = 'background-color: #faf8f0; opacity: 0.9;'; // 淡黃色底與微透明度，做出視覺降級感
-                returningBadge = `
+        if (stock.is_returning) {
+            medals += '<span title="🔄 觀察中 (近期曾跌出榜單)" style="cursor:help; margin-left: 4px;">🔄</span>';
+            trStyle = 'background-color: #faf8f0; opacity: 0.9;'; // 淡黃色底與微透明度，做出視覺降級感
+            returningBadge = `
                 <div style="margin-top: 6px;">
                     <span style="font-size: 0.8rem; padding: 4px 8px; border-radius: 4px; border: 1px solid #d6bcfa; background-color: #faf5ff; color: #6b46c1; font-weight: bold;">
                         🔄 觀察中 (近期曾跌出榜單，穩定度歸零重算)
                     </span>
                 </div>`;
 
-            }
+        }
 
-            // 🎁 紀念品 UI 區塊
-            let souvenirTag = '';
-            if (displayGift !== '') {
-                const isExpired = currentCategory === 'expired_souvenir_stocks';
-                const dateStr = stock.gift_last_buy_date ? `<span style="color: ${isExpired ? '#9ca3af' : '#dc2626'}; margin-left: 8px;">⏳ 最後買進：${stock.gift_last_buy_date}</span>` : '';
+        // 🎁 紀念品 UI 區塊
+        let souvenirTag = '';
+        if (displayGift !== '') {
+            const isExpired = currentCategory === 'expired_souvenir_stocks';
+            const dateStr = stock.gift_last_buy_date ? `<span style="color: ${isExpired ? '#9ca3af' : '#dc2626'}; margin-left: 8px;">⏳ 最後買進：${stock.gift_last_buy_date}</span>` : '';
 
-                souvenirTag = `
+            souvenirTag = `
                 <div style="margin-top: 8px;">
                     <div style="font-size: 0.85rem; padding: 6px 12px; border-radius: 6px; border: 1px solid ${isExpired ? '#d1d5db' : '#fde68a'}; background-color: ${isExpired ? '#f3f4f6' : '#fef3c7'}; color: ${isExpired ? '#6b7280' : '#b45309'}; display: inline-block;">
                         🎁 <strong>紀念品：</strong>${displayGift} ${dateStr}
                     </div>
                 </div>`;
-            }
-            // 🆕 任務四：跌出榜單警示 UI 區塊
-            let droppedWarning = '';
-            if (currentCategory === 'recent_dropped_stocks') { // 👈 這裡改成 recent_dropped_stocks
-                droppedWarning = `
+        }
+        // 🆕 任務四：跌出榜單警示 UI 區塊
+        let droppedWarning = '';
+        if (currentCategory === 'recent_dropped_stocks') { // 👈 這裡改成 recent_dropped_stocks
+            droppedWarning = `
                 <div style="margin-top: 8px;">
                     <div style="font-size: 0.9rem; padding: 6px 12px; border-radius: 6px; border: 1px solid #feb2b2; background-color: #fff5f5; color: #c53030; display: inline-block;">
                         <strong>⚠️ 淘汰原因：</strong>${stock.reason || '未達標'}
                     </div>
                 </div>`;
-            }
-            // 🆕 任務五：警示股 UI 區塊 (注意/處置標籤)
-            let warningTag = '';
-            if (stock.warning_status) {
-                const isDisposal = stock.warning_status.includes("處置");
-                // 處置用深橘色，注意用黃色
-                const bgColor = isDisposal ? '#fffaf3' : '#fffdf2';
-                const borderColor = isDisposal ? '#fbd38d' : '#fef3c7';
-                const textColor = isDisposal ? '#c05621' : '#b45309';
+        }
+        // 🆕 任務五：警示股 UI 區塊 (注意/處置標籤)
+        let warningTag = '';
+        if (stock.warning_status) {
+            const isDisposal = stock.warning_status.includes("處置");
+            // 處置用深橘色，注意用黃色
+            const bgColor = isDisposal ? '#fffaf3' : '#fffdf2';
+            const borderColor = isDisposal ? '#fbd38d' : '#fef3c7';
+            const textColor = isDisposal ? '#c05621' : '#b45309';
 
-                warningTag = `
+            warningTag = `
                 <div style="margin-top: 8px;">
                     <div style="font-size: 0.9rem; padding: 6px 12px; border-radius: 6px; border: 1px solid ${borderColor}; background-color: ${bgColor}; color: ${textColor}; display: inline-block;">
                         <strong>⚠️ 市場警示：</strong>${stock.warning_status}
                     </div>
                 </div>`;
-            }
+        }
 
-            // 🚀 防呆機制：如果沒有抓到金額，顯示 ---
-            let displayAmount = stock.dividend_amount !== undefined ? stock.dividend_amount : '---';
-            let latestPrice = stock.latest_price !== undefined ? stock.latest_price : '---';
+        // 🚀 防呆機制：如果沒有抓到金額，顯示 ---
+        let displayAmount = stock.dividend_amount !== undefined ? stock.dividend_amount : '---';
+        let latestPrice = stock.latest_price !== undefined ? stock.latest_price : '---';
 
-            // 取得目前的持股數來計算預計領取總額
-            const sharesInput = document.getElementById('sharesInput');
-            const shares = sharesInput ? (parseFloat(sharesInput.value) || 1000) : 1000;
-            let expectedTotal = stock.dividend_amount !== undefined ? (stock.dividend_amount * shares).toLocaleString() : '---';
+        // 取得目前的持股數來計算預計領取總額
+        const sharesInput = document.getElementById('sharesInput');
+        const shares = sharesInput ? (parseFloat(sharesInput.value) || 1000) : 1000;
+        let expectedTotal = stock.dividend_amount !== undefined ? (stock.dividend_amount * shares).toLocaleString() : '---';
 
-            // 🆕 任務三：皇冠圖示與走勢圖連結 (統一導向 Yahoo 股市)
-            const evergreenCrown = stock.is_evergreen ? '<span title="👑 年度長青樹" style="cursor:help; margin-right: 6px;">👑</span>' : '';
-            const financeUrl = `https://tw.stock.yahoo.com/quote/${stock.symbol}`;
+        // 🆕 任務三：皇冠圖示與走勢圖連結 (統一導向 Yahoo 股市)
+        const evergreenCrown = stock.is_evergreen ? '<span title="👑 年度長青樹" style="cursor:help; margin-right: 6px;">👑</span>' : '';
+        const financeUrl = `https://tw.stock.yahoo.com/quote/${stock.symbol}`;
 
-            // 🚀 修正：恢復三欄式結構 (名稱 | 按鈕 | 領取金額)
-            return `
+        // 🚀 修正：恢復三欄式結構 (名稱 | 按鈕 | 領取金額)
+        return `
             <tr data-symbol="${stock.symbol}" style="${trStyle}">
                 <td>
                     <div style="margin-bottom: 6px; font-size: 1.15rem; display: flex; align-items: center;">
@@ -212,10 +212,9 @@ const renderTable = () => {
                 </td>
             </tr>
         `;
-        }
     }).join('');
 
-    stockTableBody.innerHTML = rows || '<tr><td colspan="3" style="text-align:center;">此類別目前無符合條件的股票</td></tr>';
+stockTableBody.innerHTML = rows || '<tr><td colspan="3" style="text-align:center;">此類別目前無符合條件的股票</td></tr>';
 };
 
 // 🚀 修正版：頁籤切換邏輯 (支援次選單顯示/隱藏)
