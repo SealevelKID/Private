@@ -2,7 +2,8 @@ name: Daily Stock Data Update
 
 on:
   schedule:
-    - cron: '0 2 * * 6'
+    # 星期六中午 12 點 (12:00 TW) -> 星期六早上 4 點 (04:00 UTC)
+    - cron: '0 4 * * 6'
   workflow_dispatch:
 
 permissions:
@@ -30,14 +31,20 @@ jobs:
         uses: actions/setup-python@v6
         with:
           python-version: '3.10'
-          # 重新啟用快取，因為現在有 requirements.txt 可以對照了
           cache: 'pip' 
 
       - name: 安裝相依套件
         run: |
           python -m pip install --upgrade pip
-          # 讓機器人直接讀取你的 requirements.txt 來安裝所有套件
           pip install -r requirements.txt
+
+      - name: 披上隱形斗篷 (隨機等待 30~60 分鐘)
+        run: |
+          # 產生 1800 秒 (30 分鐘) 到 3600 秒 (60 分鐘) 的亂數
+          WAIT_TIME=$((1800 + RANDOM % 1801))
+          WAIT_MINS=$((WAIT_TIME / 60))
+          echo "⏳ 模擬人類作息，隨機等待 $WAIT_TIME 秒 (約 $WAIT_MINS 分鐘) 後再開始執行..."
+          sleep $WAIT_TIME
 
       - name: 執行資料抓取與分析
         run: |
@@ -70,9 +77,13 @@ jobs:
           -d chat_id=${{ env.TELEGRAM_CHAT_ID }} \
           -d text="✅ 股票資料已完成自動抓取與更新！"
 
-      - name: 發送 Telegram 失敗通知
-        if: failure()  # 🚨 關鍵：只要前面有任何一個步驟報錯中斷，就會強制觸發這步
+      - name: 發送 Telegram 失敗通知與報錯連結
+        if: failure()
         run: |
+          # 提取 GitHub Actions 的專屬日誌連結
+          ERROR_LOG_URL="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          
+          # 將連結一併發送至 Telegram
           curl -s -X POST https://api.telegram.org/bot${{ env.TELEGRAM_BOT_TOKEN }}/sendMessage \
           -d chat_id=${{ env.TELEGRAM_CHAT_ID }} \
-          -d text="🚨 警告：股票資料自動更新失敗，請檢查 GitHub Actions 紀錄！"
+          -d text="🚨 警告：股票資料自動更新失敗！%0A%0A可能是遇到證交所維護或遭到阻擋。%0A👉 點此直接查看詳細報錯紀錄：%0A$ERROR_LOG_URL"
