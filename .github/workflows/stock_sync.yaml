@@ -64,7 +64,7 @@ jobs:
           fi
 
       - name: 部署至 GitHub Pages
-        uses: actions/upload-pages-artifact@v3
+        uses: actions/upload-pages-artifact@v5   # 升級到 v5 完美對接 Node 24
         with:
           path: '.'
 
