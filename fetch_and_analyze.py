@@ -26,15 +26,14 @@ USER_AGENTS = [
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36 Edg/123.0.0.0"
 ]
 
-# 台灣 50 (0050) 成分股名單
+# 台灣 50 (0050) 成分股名單 (2026 年 6 月生效最新版)
 TW_50_LIST = [
-    "2330", "2317", "2454", "2308", "2382", "2303", "2881", "2882", "2891", "2886", 
-    "2884", "1216", "2885", "3231", "2002", "2892", "2880", "2883", "2887", "1101", 
-    "2345", "2357", "2379", "2912", "5871", "2395", "2890", "2207", "1303", "1301", 
-    "2412", "3711", "5880", "3034", "1326", "2603", "3045", "2324", "4938", "3008", 
-    "6669", "2408", "1590", "1102", "3037", "2301", "2609", "1402", "6505", "2353"
+    "1216", "1303", "2059", "2301", "2303", "2308", "2317", "2327", "2330", "2344",
+    "2345", "2357", "2360", "2368", "2382", "2383", "2395", "2408", "2412", "2449",
+    "2454", "2603", "2880", "2881", "2882", "2883", "2884", "2885", "2886", "2887",
+    "2890", "2891", "2892", "3008", "3017", "3037", "3045", "3231", "3443", "3653",
+    "3661", "3665", "3711", "4904", "4958", "5880", "6505", "6669", "7769", "8046"
 ]
-
 # 🆕 政府特許金控業名單
 FINANCIAL_HOLDINGS = [
     "2880", "2881", "2882", "2883", "2884", "2885", "2886", "2887", 
@@ -319,61 +318,102 @@ def get_dividend_stats(ticker_obj, symbol, latest_price):
     except Exception:
         return [], None, 0, False, False, False, False, 0, False, 0, False, False
 
-def get_recent_news(symbol, name):
-    """取得過去 7 天內的 Google 財經新聞，並偵測重大風險事件"""
+def get_twse_default_list():
+    """抓取證交所今日巨額違約交割名單"""
+    print("🔍 [官方直連] 正在檢查證交所「巨額違約交割」名單...")
+    url = "https://www.twse.com.tw/rwd/zh/settlement/TWT14U?response=json"
+    default_stocks = set()
+    
+    sleep_time = random.uniform(1.5, 3.5)
+    print(f"  ⏳ 啟動防護：隨機休眠 {sleep_time:.2f} 秒...")
+    time.sleep(sleep_time)
+    
     try:
-        # 🆕 任務一：精準打擊！利用 site: 指令限定只抓取 Yahoo 股市與三大權威財經網
-        search_query = f"{symbol} {name} (site:tw.stock.yahoo.com OR site:cnyes.com OR site:money.udn.com)"
-        query = urllib.parse.quote(search_query)
-        url = f"https://news.google.com/rss/search?q={query}&hl=zh-TW&gl=TW&ceid=TW:zh-Hant"
+        headers = {"User-Agent": random.choice(USER_AGENTS)}
+        res = requests.get(url, headers=headers, timeout=10, verify=False)
+        res.raise_for_status()
+        data = res.json()
         
-        # 🚨 定義重大風險關鍵字
-        major_keywords = ["合併", "私募", "處分資產", "增資", "減資", "掏空", "調查"]
-        
-        max_retries = 3
-        for attempt in range(max_retries):
-            try:
-                headers = {"User-Agent": random.choice(USER_AGENTS)}
-                res = requests.get(url, headers=headers, timeout=10, verify=False)
-                
-                if res.status_code in [403, 429]:
-                    raise ConnectionError(f"HTTP {res.status_code}")
-                res.raise_for_status()
-                
-                root = ET.fromstring(res.content)
-                seven_days_ago = datetime.now() - timedelta(days=7)
-                
-                has_news = False
-                news_url = ""
-                major_news_event = False
-                
-                for item in root.findall('.//item'):
-                    pub_date_str = item.find('pubDate').text
-                    try:
-                        pub_date = datetime.strptime(pub_date_str, "%a, %d %b %Y %H:%M:%S %Z")
-                        if pub_date > seven_days_ago:
-                            title = item.find('title').text
-                            # 檢查是否有危險關鍵字
-                            if any(kw in title for kw in major_keywords):
-                                major_news_event = True
-                            
-                            if not has_news: # 只抓第一篇最新的當作連結
-                                has_news = True
-                                news_url = item.find('link').text
-                                
-                    except Exception:
-                        continue
+        if 'data' in data:
+            for row in data['data']:
+                for item in row:
+                    item_str = str(item).strip()
+                    if len(item_str) == 4 and item_str.isdigit():
+                        default_stocks.add(item_str)
                         
-                return has_news, news_url, major_news_event
+        print(f"✅ 官方違約交割名單抓取完成！共發現 {len(default_stocks)} 檔違約股。")
+        return list(default_stocks)
+    except Exception as e:
+        print(f"  ⚠️ 官方違約名單 API 阻擋或無資料，將啟動新聞關鍵字備援防護。")
+        return []
+
+def check_news_risk(symbol, name):
+    """雙層關鍵字司法排雷與新聞掃描 (7天回溯)"""
+    FATAL_KEYWORDS = ["起訴", "判刑", "收押", "羈押", "掏空", "財報不實", "非常規交易", "重罰", "勒令停業", "撤銷發行", "內線交易", "違約交割"]
+    WARNING_KEYWORDS = ["檢調", "搜索", "約談", "交保", "涉嫌", "調查中", "釐清", "舉發"]
+    
+    search_query = f"{symbol} {name} (site:tw.stock.yahoo.com OR site:cnyes.com OR site:money.udn.com)"
+    query = urllib.parse.quote(search_query)
+    url = f"https://news.google.com/rss/search?q={query}&hl=zh-TW&gl=TW&ceid=TW:zh-Hant"
+    
+    sleep_time = random.uniform(1.5, 3.5)
+    time.sleep(sleep_time)
+    
+    try:
+        headers = {"User-Agent": random.choice(USER_AGENTS)}
+        res = requests.get(url, headers=headers, timeout=10, verify=False)
+        res.raise_for_status()
+        
+        root = ET.fromstring(res.content)
+        seven_days_ago = datetime.now() - timedelta(days=7)
+        
+        risk_level = "SAFE" 
+        risk_reason = ""
+        news_url = ""
+        first_news_url = "" # 🆕 備援 1：用來接住最近期的第一篇普通新聞
+        
+        for item in root.findall('.//item'):
+            pub_date_str = item.find('pubDate').text
+            try:
+                pub_date = datetime.strptime(pub_date_str, "%a, %d %b %Y %H:%M:%S %Z")
+                if pub_date > seven_days_ago:
+                    title = item.find('title').text
+                    link = item.find('link').text
+                    
+                    # 🆕 記下掃描到的第一篇新聞 (不論有沒有違規，先存再說)
+                    if not first_news_url:
+                        first_news_url = link
+                    
+                    if any(kw in title for kw in FATAL_KEYWORDS):
+                        fatal_kw = next(kw for kw in FATAL_KEYWORDS if kw in title)
+                        risk_level = "FATAL"
+                        risk_reason = fatal_kw
+                        news_url = link
+                        break 
+                    
+                    elif risk_level == "SAFE" and any(kw in title for kw in WARNING_KEYWORDS):
+                        warn_kw = next(kw for kw in WARNING_KEYWORDS if kw in title)
+                        risk_level = "WARNING"
+                        risk_reason = warn_kw
+                        news_url = link
+                        
+            except Exception:
+                continue
                 
-            except Exception as e:
-                if attempt < max_retries - 1:
-                    sleep_time = (2 ** attempt) * 1.5 + random.uniform(0.5, 1.5)
-                    time.sleep(sleep_time)
-                else:
-                    return False, "", False
-    except Exception:
-        return False, "", False
+        # ==========================================
+        # 🆕 網址三層備援機制
+        # ==========================================
+        if not news_url:
+            news_url = first_news_url # 1. 若無司法問題，按鈕給予最新財經新聞
+            
+        if not news_url:
+            news_url = f"https://tw.stock.yahoo.com/quote/{symbol}/news" # 2. 若七天內完全沒新聞，終極備援給 Yahoo 個股專區
+            
+        return risk_level, risk_reason, news_url
+        
+    except Exception as e:
+        # 🆕 備援 3：即使 API 斷線，依然給予 Yahoo 專屬連結保底
+        return "SAFE", "", f"https://tw.stock.yahoo.com/quote/{symbol}/news"
     
 def save_progress(filename, data):
     # ==========================================
@@ -382,9 +422,9 @@ def save_progress(filename, data):
     total_passed = len(data.get("defensive_stocks", [])) + len(data.get("growth_stocks", [])) + len(data.get("financial_stocks", []))
     processed_count = len(data.get("processed_symbols", []))
     
-    # 防護邏輯：如果系統已經處理了超過 50 檔股票，但「合格清單」卻是 0 檔
+    # 防護邏輯：如果系統已經處理了超過 100 檔股票，但「合格清單」卻是 0 檔
     # 這極度不合理（代表 API 可能被擋或壞了），此時強制攔截，拒絕覆寫舊檔案！
-    if total_passed == 0 and processed_count > 50:
+    if total_passed == 0 and processed_count > 100:
         print(f"\n🚨 [防呆攔截] 系統已掃描 {processed_count} 檔，但合格數為 0！")
         print("為保護您的舊資料不被空白覆蓋，本次操作拒絕存檔。")
         return # 直接退出函數，不執行下方的覆寫動作
@@ -426,11 +466,21 @@ def main():
     
     # 🆕 呼叫新函數，把警示黑名單先抓下來存放在記憶體
     notice_set, disposal_dict = get_warning_disposal_stocks()
+
+    # 👇 加入這一行：在開始掃描股票前，先獲取違約交割名單
+    default_list = get_twse_default_list()
     
-    # 🆕 若啟用 --test，覆寫 schedule 只保留 0050 名單
+    # 🆕 若啟用 --test，覆寫 schedule 以進行精準防護測試
     if args.test:
-        print("\n🧪 [測試模式] 已啟動！僅掃描 0050 內成分股...")
-        schedule = {k: v for k, v in schedule.items() if k.split('.')[0] in TW_50_LIST}
+        print("\n🧪 [測試模式] 已啟動！為確保測試涵蓋率，將掃描「0050成分股」並自動加入「今日所有注意/處置股」...")
+        
+        # 將 0050 名單與今日抓到的警示黑名單合併
+        test_targets = set(TW_50_LIST)
+        test_targets.update(notice_set)
+        test_targets.update(disposal_dict.keys())
+        
+        # 過濾出我們需要的測試名單
+        schedule = {k: v for k, v in schedule.items() if k.split('.')[0] in test_targets}
 
     output_filename = "stock_data.json" 
     
@@ -519,6 +569,7 @@ def main():
 
             classified = False
             reject_reason = ""
+            current_news_url = "" # 🆕 新增：用來接住肇事新聞的連結
             
             # 🆕 網路請求退避策略 (Exponential Backoff)
             max_retries = 3
@@ -604,13 +655,31 @@ def main():
                     
                     
 
-                    # 1. 呼叫升級版的新聞掃描 (多接一個 major_news_event)
-                    has_news, news_url, major_news_event = get_recent_news(code, name)
+                    # ==========================================
+                    # 🚨 新增：質化資訊與重大合規排雷網
+                    # ==========================================
+                    # 1. 官方違約交割名單攔截 (第一道防線)
+                    if code in default_list:
+                        reject_reason = "重大事件：名列證交所巨額違約交割公告名單"
+                        fetch_success = True; break
+
+                    # 2. 呼叫雙層關鍵字新聞排雷 (第二道防線)
+                    risk_level, risk_reason, news_url = check_news_risk(code, name)
                     
-                    # 2. 呼叫新的深度防禦函數
+                    # 若為 FATAL，直接宣判死刑並剔除
+                    if risk_level == "FATAL":
+                        reject_reason = f"重大事件 [{risk_reason}]" # 🆕 拿掉全形冒號，改用中括號包覆
+                        current_news_url = news_url 
+                        fetch_success = True; break
+                        
+                    # 轉接變數給後續存檔與前端 UI 使用
+                    major_news_event = (risk_level == "WARNING") # 給前端加上 🚨 符號用
+                    has_news = bool(news_url)
+                    
+                    # 3. 呼叫盈餘純度與股本防禦
                     pure_eps_ratio_avg, capital_event = get_advanced_defense_stats(ticker_obj, eps_data, dividend_history)
                     
-                    # 3. 🚨 盈餘純度紅線淘汰邏輯 (連續吃老本淘汰)
+                    # 4. 🚨 盈餘純度紅線淘汰邏輯 (連續吃老本淘汰)
                     if pure_eps_ratio_avg < 50.0:
                         reject_reason = f"Stage 2 淘汰：盈餘純度過低 ({pure_eps_ratio_avg}%)，有吃老本風險"
                         fetch_success = True; break
@@ -686,13 +755,20 @@ def main():
                             break
 
                     # ==========================================
-                    # 🆕 任務三：判定是否為飆股/警示股
+                    # 🆕 任務三：判定是否為處置股/警示股/司法調查
                     # ==========================================
                     warning_status = ""
                     if code in disposal_dict:
                         warning_status = disposal_dict[code] # "處置中"
                     elif code in notice_set:
                         warning_status = "注意股"
+
+                    # 🟡 若新聞排雷機制判定為 WARNING (司法調查中)，追加警示狀態
+                    if risk_level == "WARNING":
+                        if warning_status:
+                            warning_status += f" / 司法調查 [{risk_reason}]" # 🆕 加上專屬前綴與中括號
+                        else:
+                            warning_status = f"司法調查 [{risk_reason}]" # 🆕 加上專屬前綴與中括號
 
                     stock_info = {
                         "symbol": code,
@@ -814,6 +890,10 @@ def main():
                     dropped_info["listed_count"] = 0 # 重置穩定度
                     # 👇 1. 補上今天的淘汰日期，讓 30 天保留機制能計算
                     dropped_info["drop_date"] = datetime.now().strftime("%Y-%m-%d") 
+                    
+                    # 🆕 補釘：把肇事新聞的連結綁定進去，覆寫掉上週的舊連結
+                    if current_news_url:
+                        dropped_info["google_news_url"] = current_news_url
                     
                     # 🆕 2. 檢查是否已經在清單內，避免重複加入
                     existing_index = next((i for i, s in enumerate(results["recent_dropped_stocks"]) if s["symbol"] == code), -1)
