@@ -216,9 +216,20 @@ def get_dividend_stats(ticker_obj, symbol, latest_price):
         # 🆕 擴充回傳兩個布林值: is_outlier_warning, is_fast_fill，發生錯誤時預設給 False
         if dividends.empty: return [], None, 0, False, False, False, False, 0, False, 0, False, False
             
-        one_year_ago = datetime.now(dividends.index.tzinfo) - timedelta(days=365)
-        recent_1y_divs = dividends[dividends.index >= one_year_ago]
-        total_div_1y = float(recent_1y_divs.sum()) if not recent_1y_divs.empty else 0
+        # ==========================================
+        # 🆕 修正：動態判定配息頻率，精準抓取「最新一年度」的股息
+        # ==========================================
+        recent_4y = dividends[dividends.index >= datetime.now(dividends.index.tzinfo) - timedelta(days=4*365)]
+        if not recent_4y.empty:
+            # 算出這檔股票每年平均發幾次股息 (取中位數)
+            freq = int(round(recent_4y.groupby(recent_4y.index.year).count().median()))
+        else:
+            freq = 1
+            
+        freq = max(1, freq) # 防呆，最少為 1 次 (年配息)
+        
+        # 直接抓取「最後 freq 次」的配息金額加總 (完美避開 365 天內遇到兩次除息的雙重計算)
+        total_div_1y = float(dividends.tail(freq).sum()) if not dividends.empty else 0
         dividend_yield = (total_div_1y / latest_price) * 100 if latest_price > 0 else 0
 
         ten_years_ago = datetime.now(dividends.index.tzinfo) - timedelta(days=10*365)
