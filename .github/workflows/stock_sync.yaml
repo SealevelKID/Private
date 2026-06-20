@@ -39,6 +39,7 @@ jobs:
           pip install -r requirements.txt
 
       - name: 披上隱形斗篷 (隨機等待 30~60 分鐘)
+        if: github.event_name == 'schedule'  # 🆕 只有在週末定時排程觸發時才休眠；手動點擊會直接跳過此步驟
         run: |
           # 產生 1800 秒 (30 分鐘) 到 3600 秒 (60 分鐘) 的亂數
           WAIT_TIME=$((1800 + RANDOM % 1801))
