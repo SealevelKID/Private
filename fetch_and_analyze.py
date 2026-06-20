@@ -504,7 +504,8 @@ def main():
         "recent_dropped_stocks": [], 
         "processed_symbols": [],
         "rejected_stocks": [],
-        "last_update": ""
+        "last_update": "",
+        "last_0050_reminder_month": ""  # 🆕 新增欄位：用來記憶上一次發送 0050 提醒的月份
     }
     
     history_listed_counts = {} # 🆕 紀錄歷史上榜次數
@@ -515,6 +516,9 @@ def main():
         try:
             with open(output_filename, 'r', encoding='utf-8') as f:
                 saved_data = json.load(f)
+
+                # 🆕 將舊的發送紀錄讀取進來，這樣重新執行時才不會遺失記憶
+                results["last_0050_reminder_month"] = saved_data.get("last_0050_reminder_month", "")
                 
                 # 提取舊榜單，用於比對跌出榜單與累計次數
                 for cat in ["defensive_stocks", "growth_stocks", "financial_stocks"]:
@@ -944,6 +948,25 @@ def main():
     total_seconds = int(end_time - start_time)
     mins, secs = divmod(total_seconds, 60)
     
+    # ==========================================
+    # 🆕 任務一：0050 成分股月底調整提醒機制
+    # ==========================================
+    now_date = datetime.now()
+    current_month = now_date.month
+    current_day = now_date.day
+    current_ym = now_date.strftime("%Y-%m")
+    reminder_text = ""
+
+    # 判斷是否為 3, 6, 9, 12 月，並且日期大於等於 24 號 (最後一週)
+    if current_month in [3, 6, 9, 12] and current_day >= 24:
+        last_reminder = results.get("last_0050_reminder_month", "")
+        # 確認這個月還沒發送過提醒
+        if last_reminder != current_ym:
+            reminder_text = "\n\n⚠️ <b>【重要提醒】本月為 0050 成分股調整月！</b>\n請記得手動檢查並更新程式碼中的成分股名單。"
+            # 寫入記憶，確保本月即使重複跑也不會再吵你
+            results["last_0050_reminder_month"] = current_ym  
+
+    # 💾 確保提醒的記憶欄位有被存入 JSON 中
     save_progress(output_filename, results)
     
     # 計算收錄與淘汰總數
@@ -958,15 +981,14 @@ def main():
     print(f"💾 資料已匯出至 {output_filename} 以及 rejected_stocks.json")
     print("="*50)
 
-    # ==========================================
-    # 🆕 新增：執行完畢發送 Telegram 通知
-    # ==========================================
+    # 組合通知訊息 (動態加上 reminder_text)
     report_msg = (
         f"📊 <b>[股市掃描執行完畢]</b>\n"
         f"⏱️ 總耗時：{mins} 分 {secs} 秒\n"
         f"✅ 成功收錄資優生：{total_passed} 檔\n"
         f"❌ 淘汰總數：{total_rejected} 檔\n"
         f"💾 檔案皆已安全存檔！"
+        f"{reminder_text}"
     )
     send_telegram_notification(report_msg)
 
