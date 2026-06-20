@@ -380,7 +380,17 @@ def check_news_risk(symbol, name):
                     title = item.find('title').text
                     link = item.find('link').text
                     
-                    # 🆕 記下掃描到的第一篇新聞 (不論有沒有違規，先存再說)
+                    # ==========================================
+                    # 🛡️ 核心防誤殺機制：過濾 Google 亂抓的無關新聞
+                    # ==========================================
+                    # 移除 -KY 方便比對 (例如 臻鼎-KY -> 臻鼎)
+                    clean_name = name.replace("-KY", "").replace("*", "")
+                    
+                    # 如果標題連「公司名稱」或「股票代號」都沒有，代表是誤抓，直接跳過這篇！
+                    if clean_name not in title and symbol not in title:
+                        continue
+
+                    # 🆕 記下掃描到的第一篇【真正相關】的新聞 (不論有沒有違規，先存再說)
                     if not first_news_url:
                         first_news_url = link
                     
