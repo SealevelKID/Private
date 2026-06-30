@@ -1,8 +1,8 @@
 let stockData = {};
 let currentCategory = 'defensive_stocks';
 
-// 🚀 修正 1：確保讀取 v2.0 的新檔名 stock_data.json
-fetch('stock_data.json')
+// 🚀 修正：加上時間戳記，強迫瀏覽器不要拿快取的舊 JSON
+fetch('stock_data.json?t=' + new Date().getTime())
     .then(response => response.json())
     .then(data => {
         stockData = data;
@@ -146,11 +146,18 @@ const renderTable = () => {
         }
         // 🆕 任務四：跌出榜單警示 UI 區塊
         let droppedWarning = '';
-        if (currentCategory === 'recent_dropped_stocks') { // 👈 這裡改成 recent_dropped_stocks
+        if (currentCategory === 'recent_dropped_stocks') { 
+            let newsLinkHtml = '';
+            // 🚨 配合後端實作：若該淘汰股有綁定肇事新聞，則生成點擊連結
+            if (stock.google_news_url) {
+                newsLinkHtml = `<a href="${stock.google_news_url}" target="_blank" style="margin-left: 8px; font-size: 0.85rem; color: #e53e3e; text-decoration: underline; font-weight: bold;">[查看相關新聞]</a>`;
+            }
+            
             droppedWarning = `
                 <div style="margin-top: 8px;">
                     <div style="font-size: 0.9rem; padding: 6px 12px; border-radius: 6px; border: 1px solid #feb2b2; background-color: #fff5f5; color: #c53030; display: inline-block;">
                         <strong>⚠️ 淘汰原因：</strong>${stock.reason || '未達標'}
+                        ${newsLinkHtml}
                     </div>
                 </div>`;
         }
@@ -198,6 +205,7 @@ const renderTable = () => {
                     <div style="font-size: 0.95rem; color: #6b7280; margin-bottom: 8px;">
                         現價：${latestPrice} 元
                     </div>
+                    ${statsHtml} 
                     ${souvenirTag}
                     ${droppedWarning}
                     ${returningBadge} </td>
@@ -473,7 +481,8 @@ if (omniSearchInput && omniSearchResults) {
                 // 組合顯示的詳細資訊 (過關的顯示數據，淘汰的顯示死因)
                 let detailInfo = '';
                 if (isRejected) {
-                    detailInfo = `<span style="color: #e53e3e; font-weight: bold;">淘汰原因：</span>${stock.reason || '未達標'}`;
+                    let searchNewsLink = stock.google_news_url ? ` <a href="${stock.google_news_url}" target="_blank" style="color: #e53e3e; text-decoration: underline; margin-left: 6px; font-size: 0.9rem;">[相關新聞]</a>` : '';
+                    detailInfo = `<span style="color: #e53e3e; font-weight: bold;">淘汰原因：</span>${stock.reason || '未達標'}${searchNewsLink}`;
                 } else {
                     detailInfo = `<span style="color: #4a5568;">現價：${stock.latest_price || '--'} 元 | 殖利率：${stock.dividend_yield_pct || '--'}%</span>`;
                 }
