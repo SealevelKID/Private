@@ -360,7 +360,8 @@ def get_twse_default_list():
 
 def check_news_risk(symbol, name):
     """雙層關鍵字司法排雷與新聞掃描 (7天回溯)"""
-    FATAL_KEYWORDS = ["起訴", "判刑", "收押", "羈押", "掏空", "財報不實", "非常規交易", "重罰", "勒令停業", "撤銷發行", "內線交易", "違約交割"]
+    # 👇 擴充：將「下市」加入 FATAL_KEYWORDS 致命名單中首位
+    FATAL_KEYWORDS = ["下市", "起訴", "判刑", "收押", "羈押", "掏空", "財報不實", "非常規交易", "重罰", "勒令停業", "撤銷發行", "內線交易", "違約交割"]
     WARNING_KEYWORDS = ["檢調", "搜索", "約談", "交保", "涉嫌", "調查中", "釐清", "舉發"]
     
     search_query = f"{symbol} {name} (site:tw.stock.yahoo.com OR site:cnyes.com OR site:money.udn.com)"
@@ -623,7 +624,11 @@ def main():
                     
                     latest_price = float(hist_1y['Close'].iloc[-1]) 
                     
-                    # 計算均線 (半年線 120MA, 年線 240MA)
+                    # ==========================================
+                    # 🛡️ 計算均線：擴充月線 (20MA) 與季線 (60MA)
+                    # ==========================================
+                    ma_20 = hist_1y['Close'].tail(20).mean() if len(hist_1y) >= 20 else None
+                    ma_60 = hist_1y['Close'].tail(60).mean() if len(hist_1y) >= 60 else None
                     ma_120 = hist_1y['Close'].tail(120).mean() if len(hist_1y) >= 120 else None
                     ma_240 = hist_1y['Close'].tail(240).mean() if len(hist_1y) >= 240 else None
                         
@@ -806,7 +811,7 @@ def main():
                         "dividend_amount": annual_dividend,          
                         "beta": beta,
                         "avg_fill_dividend_days": median_fill_days,
-                        "failed_fill_count": fault_count_90d, # ✅ 修正：統一接住 fault_count_90d 的值
+                        "failed_fill_count": fault_count_90d, 
                         "is_dividend_spike": is_dividend_spike,
                         "last_year_eps": eps_data[-1] if eps_data else None,
                         "recent_news_alert": has_news,
@@ -823,13 +828,22 @@ def main():
                         "major_news_event": major_news_event, 
                         "gift_name": "",         
                         "gift_last_buy_date": "" ,
-                        "is_evergreen": bool(is_evergreen),  # 👑 記得這行後面要加逗號！
-                        "history_hits": history_hits,                  # 🛠️ 修正 3：必須把紀錄存入 JSON！
-                        "last_hit_date": now_date.strftime("%Y-%m-%d"), # 🛠️ 修正 3：必須把日期存入 JSON！
-                        "warning_status": warning_status,  # 🆕 記得在這裡補上這行，把狀態存進去！
-                        "is_returning": is_returning  # 🆕 將敗部復活狀態存入 JSON
+                        "is_evergreen": bool(is_evergreen),  
+                        "history_hits": history_hits,                  
+                        "last_hit_date": now_date.strftime("%Y-%m-%d"), 
+                        "warning_status": warning_status,  
+                        "is_returning": is_returning  
                     }
                     
+                    # ==========================================
+                    # 🛑 全域攔截網：短中期趨勢走弱 (不接刀機制)
+                    # ==========================================
+                    # 在進入分類前，若最新股價同時跌破月線與季線，直接判定淘汰
+                    if ma_20 is not None and ma_60 is not None:
+                        if latest_price < ma_20 and latest_price < ma_60:
+                            reject_reason = "短中期趨勢走弱 (股價跌破月線與季線)"
+                            fetch_success = True; break
+
                     # ==========================================
                     # 🚀 分類與攔截網：合格的好股票，若被警示則獨立存放
                     # ==========================================
