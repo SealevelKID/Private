@@ -214,7 +214,7 @@ def get_dividend_stats(ticker_obj, symbol, latest_price):
     try:
         dividends = ticker_obj.dividends
         # 🆕 擴充回傳兩個布林值: is_outlier_warning, is_fast_fill，發生錯誤時預設給 False
-        if dividends.empty: return [], None, 0, False, False, False, False, 0, False, 0, False, False
+        if dividends.empty: return [], None, 0, False, False, False, False, 0, False, 0, False, False, False
             
         # ==========================================
         # 🆕 修正：動態判定配息頻率，精準抓取「最新一年度」的股息
@@ -283,24 +283,31 @@ def get_dividend_stats(ticker_obj, symbol, latest_price):
         recent_divs = dividends[dividends.index >= three_years_ago]
         
         if recent_divs.empty: 
-            return [], None, dividend_yield, False, is_long_dividend_10y, is_long_dividend_15y, has_volatility, 0, is_dividend_spike, total_div_1y, False, False
+            return [], None, dividend_yield, False, is_long_dividend_10y, is_long_dividend_15y, has_volatility, 0, is_dividend_spike, total_div_1y, False, False, False
 
         current_year = datetime.now().year
         has_current_year = any(d.year == current_year for d in recent_divs.index)
         is_estimated = False
         history = []
         
-        fault_count_90d = 0   # 統計超過 90 天的次數
-        is_fast_fill = True   # 預設為優良，遇到 > 30 天即破功
+        fault_count_90d = 0   
+        is_fast_fill = True   
         now_tz = datetime.now(dividends.index.tzinfo)
+
+        # 🆕 新增：追蹤歷年除息前股價與跌幅標記
+        ex_dividend_prices = []
+        is_price_dropping_severely = False
 
         for date, amount in recent_divs.items():
             date_str = date.strftime("%Y-%m-%d")
             history.append({"ex_dividend_date": date_str, "amount": float(amount)})
             
-            prices_before = hist_prices_5y[hist_prices_5y.index < date] # 沿用 5 年價格表
+            prices_before = hist_prices_5y[hist_prices_5y.index < date] 
             if not prices_before.empty:
                 target_price = prices_before['Close'].iloc[-1]
+                
+                # 🆕 記錄每一次除息前一天的收盤價
+                ex_dividend_prices.append(target_price)
                 prices_after = hist_prices_5y[hist_prices_5y.index >= date]
                 filled = prices_after[prices_after['Close'] >= target_price]
                 
@@ -316,6 +323,15 @@ def get_dividend_stats(ticker_obj, symbol, latest_price):
                     if days_since_ex > 90:
                         fault_count_90d += 1
                     is_fast_fill = False # 尚未填息就不算 fast fill
+        # 🆕 執行 5% 跌幅檢查：兩兩比對近三年的除息前股價
+        if len(ex_dividend_prices) >= 2:
+            for i in range(1, len(ex_dividend_prices)):
+                prev_year_price = ex_dividend_prices[i-1]
+                curr_year_price = ex_dividend_prices[i]
+                # 若今年的價格低於去年的 95% (即跌幅超過 5%)
+                if curr_year_price < (prev_year_price * 0.95):
+                    is_price_dropping_severely = True
+                    break
 
         # 單次容錯判定：剛好 1 次失誤，且 5 年中位數極為優秀(<=15)
         is_outlier_warning = bool((fault_count_90d == 1) and (median_fill_days <= 15))
@@ -324,10 +340,10 @@ def get_dividend_stats(ticker_obj, symbol, latest_price):
             history.append({"ex_dividend_date": f"{current_year}-XX-XX", "amount": float(history[-1]['amount']), "is_estimated": True})
             is_estimated = True
             
-        # 👇 回傳值擴充，加上 is_outlier_warning 與 is_fast_fill
-        return history, round(float(median_fill_days), 1), round(dividend_yield, 2), is_estimated, is_long_dividend_10y, is_long_dividend_15y, has_volatility, fault_count_90d, is_dividend_spike, total_div_1y, is_outlier_warning, is_fast_fill
+         # 👇 回傳值擴充，加上最後一個 is_price_dropping_severely
+        return history, round(float(median_fill_days), 1), round(dividend_yield, 2), is_estimated, is_long_dividend_10y, is_long_dividend_15y, has_volatility, fault_count_90d, is_dividend_spike, total_div_1y, is_outlier_warning, is_fast_fill, is_price_dropping_severely
     except Exception:
-        return [], None, 0, False, False, False, False, 0, False, 0, False, False
+        return [], None, 0, False, False, False, False, 0, False, 0, False, False, False
 
 def get_twse_default_list():
     """抓取證交所今日巨額違約交割名單"""
@@ -604,23 +620,22 @@ def main():
             for attempt in range(max_retries):
                 try:
                     # ==========================================
-                    # 🛡️ Stage 1: 基礎流動性快篩 (門檻下調至 300 張) & 均線計算
+                    # 🛡️ Stage 1: 基礎流動性快篩 (門檻下調至 200 張) & 均線計算
                     # ==========================================
-                    hist_1y = ticker_obj.history(period="1y") # 👈 這裡宣告 hist_1y，確保後續抓得到資料
+                    hist_1y = ticker_obj.history(period="1y") 
                     if hist_1y.empty or len(hist_1y) < 20:
                         reject_reason = "Stage 1 淘汰：無足夠的近期交易資料"
                         fetch_success = True; break
                         
                     avg_vol_20d = hist_1y['Volume'].tail(20).mean()
                     
-                    # 🆕 任務一：門檻由 500,000 (500張) 下調至 300,000 (300張)
-                    if avg_vol_20d < 300000: 
+                    # 🆕 更新：門檻下調至 200,000 (200張)
+                    if avg_vol_20d < 200000: 
                         reject_reason = f"Stage 1 淘汰：流動性不足 (近20日均量僅 {avg_vol_20d/1000:.0f} 張)"
                         fetch_success = True; break
                         
-                    # 🆕 判定是否為冷門穩健標的 (300~500張之間)
-                    # ⚠️ 加上 bool() 強制轉換，避免 Numpy 型態導致 JSON 存檔崩潰
-                    is_niche_stable = bool(300000 <= avg_vol_20d < 500000)
+                    # 🆕 判定是否為冷門穩健標的 (200~500張之間)
+                    is_niche_stable = bool(200000 <= avg_vol_20d < 500000)
                     
                     latest_price = float(hist_1y['Close'].iloc[-1]) 
                     
@@ -650,11 +665,16 @@ def main():
                         reject_reason = "無法計算大盤連動 Beta 值"
                         fetch_success = True; break
                         
-                    # 🆕 擴充承接變數，加入 is_outlier_warning 與 is_fast_fill
-                    dividend_history, median_fill_days, dividend_yield, is_estimated, is_long_dividend_10y, is_long_dividend_15y, has_volatility, fault_count_90d, is_dividend_spike, total_div_1y, is_outlier_warning, is_fast_fill = get_dividend_stats(ticker_obj, yf_symbol, latest_price)
+                    # 🆕 擴充承接變數，加入 is_price_dropping_severely
+                    dividend_history, median_fill_days, dividend_yield, is_estimated, is_long_dividend_10y, is_long_dividend_15y, has_volatility, fault_count_90d, is_dividend_spike, total_div_1y, is_outlier_warning, is_fast_fill, is_price_dropping_severely = get_dividend_stats(ticker_obj, yf_symbol, latest_price)
                     
                     if median_fill_days is None: 
                         reject_reason = "缺乏配息紀錄或除息資料"
+                        fetch_success = True; break
+
+                    # 🚨 執行 5% 跌幅淘汰攔截
+                    if is_price_dropping_severely:
+                        reject_reason = "殖利率陷阱：近三年內，除息前股價較前一年下跌超過 5%"
                         fetch_success = True; break
 
                     if dividend_yield <= 1.5:
